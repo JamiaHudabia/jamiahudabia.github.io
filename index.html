@@ -247,7 +247,8 @@ en:{
   heroCaptionSub:"An institution for worship, Quran education, and community service.",
   secStudentInfo:"Student Information", secGuardianInfo:"Guardian & Contact", secDocsClass:"Class & Documents",
   dashPending:"Pending Admissions", dashStudents:"Total Students", dashToday:"Marked Today", dashMonthPct:"This Month's Attendance",
-  hiddenHint:"Contact: 03225600912"
+  hiddenHint:"Contact: 03225600912",
+  prayerAutoNote:"Calculated daily for Gujranwala, Punjab — updates automatically."
 },
 ur:{
   nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں"},
@@ -291,7 +292,8 @@ ur:{
   heroCaptionSub:"عبادت، دینی تعلیم اور خدمت خلق کا ادارہ۔",
   secStudentInfo:"طالب علم کی معلومات", secGuardianInfo:"سرپرست اور رابطہ", secDocsClass:"جماعت اور کاغذات",
   dashPending:"زیر التواء درخواستیں", dashStudents:"کل طلباء", dashToday:"آج کی حاضری", dashMonthPct:"اس ماہ کی حاضری",
-  hiddenHint:"رابطہ: 03225600912"
+  hiddenHint:"رابطہ: 03225600912",
+  prayerAutoNote:"گوجرانوالہ، پنجاب کے لیے روزانہ خودکار حساب — خود بخود اپڈیٹ ہوتا ہے۔"
 }};
 
 const SUPABASE_URL = "https://upoegzpuuwrgmcyfgtez.supabase.co";
@@ -324,13 +326,48 @@ async function loadAll(){
   renderNav(); render(); renderBell();
   try{
     const {data} = await sb.rpc('get_site_content');
-    if(data){ content = {prayerTimes:data.prayer_times, announcements:data.announcements, classes:data.classes}; }
+    if(data){ content = {prayerTimes:data.prayer_times, announcements:data.announcements, classes:data.classes, prayerDate:data.prayer_date}; }
   }catch(e){ console.error('site_content load failed', e); }
   try{
     const {data} = await sb.rpc('admin_exists');
     adminSetupNeeded = !data;
   }catch(e){ console.error('admin_exists check failed', e); }
   renderNav(); render(); renderBell();
+  syncPrayerTimesIfNeeded();
+}
+
+function todayInPakistan(){
+  return new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Karachi'});
+}
+function to12Hour(hhmm){
+  const clean = hhmm.split(' ')[0]; // strip any "(PKT)" style suffix
+  const [h,m] = clean.split(':').map(Number);
+  const period = h>=12 ? 'PM' : 'AM';
+  const h12 = h%12===0 ? 12 : h%12;
+  return `${h12}:${String(m).padStart(2,'0')} ${period}`;
+}
+async function syncPrayerTimesIfNeeded(){
+  const today = todayInPakistan();
+  if(content.prayerDate === today) return; // already synced for today
+  try{
+    const [dd,mm,yyyy] = [today.slice(8,10), today.slice(5,7), today.slice(0,4)];
+    const url = `https://api.aladhan.com/v1/timingsByCity/${dd}-${mm}-${yyyy}?city=Gujranwala&country=Pakistan&method=1`;
+    const res = await fetch(url);
+    const json = await res.json();
+    const tm = json.data.timings;
+    const newTimes = [
+      {name:'Fajr', time:to12Hour(tm.Fajr)},
+      {name:'Dhuhr', time:to12Hour(tm.Dhuhr)},
+      {name:'Asr', time:to12Hour(tm.Asr)},
+      {name:'Maghrib', time:to12Hour(tm.Maghrib)},
+      {name:'Isha', time:to12Hour(tm.Isha)},
+    ];
+    const {data, error} = await sb.rpc('sync_prayer_times', {p_prayer_times:newTimes, p_date:today});
+    if(error) throw error;
+    if(data){ content.prayerTimes = newTimes; content.prayerDate = today; }
+    else { const {data:fresh} = await sb.rpc('get_site_content'); if(fresh){ content.prayerTimes = fresh.prayer_times; content.prayerDate = fresh.prayer_date; } }
+    if(page==='home') render();
+  }catch(e){ console.error('prayer time auto-sync failed', e); }
 }
 
 async function loadAdminData(){
@@ -415,6 +452,7 @@ function renderHome(){
   <div class="grid2">
     <div class="card">
       <h3>${t().prayerTimes} ${adminOK?`<span class="edit-badge">${t().editMode}</span>`:''}</h3>
+      <p style="font-size:11.5px;color:var(--muted);margin:-8px 0 14px;">${t().prayerAutoNote}</p>
       <div class="card-grid">
         ${content.prayerTimes.map((p,i)=> editingPrayer===i ? `
           <div class="prayer-card"><div class="pname">${p.name}</div>
