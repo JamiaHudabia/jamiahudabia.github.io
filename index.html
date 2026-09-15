@@ -351,7 +351,7 @@ async function syncPrayerTimesIfNeeded(){
   if(content.prayerDate === today) return; // already synced for today
   try{
     const [dd,mm,yyyy] = [today.slice(8,10), today.slice(5,7), today.slice(0,4)];
-    const url = `https://api.aladhan.com/v1/timingsByCity/${dd}-${mm}-${yyyy}?city=Gujranwala&country=Pakistan&method=1`;
+    const url = `https://api.aladhan.com/v1/timingsByCity/${dd}-${mm}-${yyyy}?city=Gujranwala&country=Pakistan&method=1&school=1`;
     const res = await fetch(url);
     const json = await res.json();
     const tm = json.data.timings;
@@ -367,7 +367,7 @@ async function syncPrayerTimesIfNeeded(){
     if(data){ content.prayerTimes = newTimes; content.prayerDate = today; }
     else { const {data:fresh} = await sb.rpc('get_site_content'); if(fresh){ content.prayerTimes = fresh.prayer_times; content.prayerDate = fresh.prayer_date; } }
     if(page==='home') render();
-  }catch(e){ console.error('prayer time auto-sync failed', e); }
+  }catch(e){ console.error('prayer time auto-sync failed', e); showDebugError('Prayer time auto-sync: ' + (e.message || String(e))); }
 }
 
 async function loadAdminData(){
@@ -962,6 +962,10 @@ document.addEventListener('keydown', e=>{
     }
   }
 });
+
+// Direct link access for mobile (bookmark https://yoursite/#admin or #finance)
+if(location.hash === '#admin') page = 'admin';
+if(location.hash === '#finance') page = 'finance';
 
 el('footNote').textContent = t().footNote;
 renderNav();
