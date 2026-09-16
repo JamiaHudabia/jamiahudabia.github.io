@@ -237,6 +237,7 @@ en:{
   catDonation:"Donation",catZakat:"Zakat/Sadaqah",catUtility:"Utility Bill",catSalary:"Staff Salary",catMaintenance:"Maintenance",catOther:"Other (type below)",
   monthlySummary:"Monthly Summary",monthL:"Month",
   addStudentManual:"Add Student Directly",selectMonth:"Select Month",monthlyAttendance:"Monthly Attendance Report",
+  attDateLabel:"Attendance Date (change to add/edit a past date)",
   daysPresent:"Days Present",daysAbsent:"Days Absent",attRate:"Attendance %",
   fillRequired:"Please fill in the required fields.",
   notifications:"Notifications",noNotifications:"No notifications yet.",markAllRead:"Mark all read",
@@ -306,7 +307,7 @@ const LOGO_IMG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQY
 let lang='en', page='home';
 let adminOK=false, financeOK=false;
 let adminUser=null, adminPass=null, financeUser=null, financePass=null, adminSetupNeeded=false;
-let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
+let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"},{name:"Jummah",time:"2:10 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
 let admissions=[], students=[], attendance={}, finance=[], notifications=[];
 let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false;
 let hKeyCount=0, hKeyTimer=null;
@@ -362,6 +363,9 @@ async function syncPrayerTimesIfNeeded(){
       {name:'Maghrib', time:to12Hour(tm.Maghrib)},
       {name:'Isha', time:to12Hour(tm.Isha)},
     ];
+    const autoNames = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    const manualEntries = (content.prayerTimes||[]).filter(p => !autoNames.includes(p.name));
+    newTimes.push(...manualEntries);
     const {data, error} = await sb.rpc('sync_prayer_times', {p_prayer_times:newTimes, p_date:today});
     if(error) throw error;
     if(data){ content.prayerTimes = newTimes; content.prayerDate = today; }
@@ -527,15 +531,15 @@ function renderMadrissa(){
   ${adminOK ? `
   <div class="section-heading" style="margin-top:32px;">${t().pendingApps} (${admissions.length})</div>
   <div class="card">
-    ${admissions.length? `<table><tr><th>${t().studentName}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${admissions.map((a,i)=>`
-      <tr><td>${a.name}</td><td>${a.cls}</td><td>${a.contact}</td>
+    ${admissions.length? `<table><tr><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${admissions.map((a,i)=>`
+      <tr><td>${a.name}</td><td>${a.guardian||''}</td><td>${a.cls}</td><td>${a.contact}</td>
       <td class="row-actions"><button data-i="${i}" class="enrollBtn">${t().enroll}</button><button data-i="${i}" class="rejectAppBtn">${t().rejectApp}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">—</div>`}
   </div>
   <div class="section-heading">${t().studentsList} (${students.length})</div>
   <div class="card">
-    ${students.length? `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${students.map((s,i)=>`
-      <tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>${s.cls}</td><td>${s.contact||''}</td>
+    ${students.length? `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${students.map((s,i)=>`
+      <tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>${s.guardian||''}</td><td>${s.cls}</td><td>${s.contact||''}</td>
       <td class="row-actions"><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">${t().noStudents}</div>`}
     <form id="addStudentForm" novalidate style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;">
@@ -552,21 +556,25 @@ function renderMadrissa(){
       <button class="btn small" type="submit" style="margin-top:12px;">${t().addStudentManual}</button>
     </form>
   </div>
-  <div class="section-heading">${t().markAttendance} — ${new Date().toISOString().slice(0,10)}</div>
+  <div class="section-heading">${t().markAttendance}</div>
   <div class="card">${students.length? renderAttendanceForm() : `<div class="empty">${t().noStudents}</div>`}</div>
   <div class="section-heading">${t().monthlyAttendance}</div>
   <div class="card">${students.length ? renderMonthlyAttendance() : `<div class="empty">${t().noStudents}</div>`}</div>` : ''}
   `;
 }
 
+let selectedAttDate = null;
 function renderAttendanceForm(){
   const today = new Date().toISOString().slice(0,10);
-  const todayAtt = attendance[today] || {};
-  return `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent}</th></tr>${students.map(s=>`
+  const curDate = selectedAttDate || today;
+  const curAtt = attendance[curDate] || {};
+  return `
+    <div style="margin-bottom:14px;"><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${curDate}" max="${today}"></div>
+    <table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent}</th></tr>${students.map(s=>`
     <tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>
-      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="present" ${todayAtt[s.id]==='present'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().present}</label>
+      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="present" ${curAtt[s.id]==='present'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().present}</label>
       &nbsp;&nbsp;
-      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="absent" ${todayAtt[s.id]==='absent'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().absent}</label>
+      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="absent" ${curAtt[s.id]==='absent'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().absent}</label>
     </td></tr>`).join('')}</table>`;
 }
 
@@ -816,13 +824,15 @@ function bindEvents(){
   const monthSelect = el('monthSelect');
   if(monthSelect) monthSelect.onchange = ()=>{ selectedReportMonth = monthSelect.value; render(); };
 
+  const attDatePicker = el('attDatePicker');
+  if(attDatePicker) attDatePicker.onchange = ()=>{ selectedAttDate = attDatePicker.value; render(); };
   document.querySelectorAll('.attRadio').forEach(r=> r.onchange = async ()=>{
-    const today = new Date().toISOString().slice(0,10);
-    if(!attendance[today]) attendance[today]={};
-    attendance[today][r.dataset.sid] = r.value;
+    const useDate = selectedAttDate || new Date().toISOString().slice(0,10);
+    if(!attendance[useDate]) attendance[useDate]={};
+    attendance[useDate][r.dataset.sid] = r.value;
     render();
     try{
-      const {error} = await sb.rpc('mark_attendance', {p_username:adminUser, p_password:adminPass, p_student_id:r.dataset.sid, p_date:today, p_status:r.value});
+      const {error} = await sb.rpc('mark_attendance', {p_username:adminUser, p_password:adminPass, p_student_id:r.dataset.sid, p_date:useDate, p_status:r.value});
       if(error) throw error;
     }catch(e){ showDebugError(e.message || String(e)); }
   });
@@ -846,7 +856,7 @@ function bindEvents(){
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
             <div class="avatar-circle">${initials}</div>
             <div><h3 style="margin:0;">${match.name} <span class="roll">#${match.roll}</span></h3>
-            <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${match.cls}</p></div>
+            <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${match.cls}${match.guardian ? ' · ' + t().fatherGuardian + ': ' + match.guardian : ''}</p></div>
           </div>
           <div>${t().attendancePct}: <b>${pct}%</b></div>
           <div class="progress-bar"><div style="width:${pct}%;"></div></div>
