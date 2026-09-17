@@ -249,7 +249,13 @@ en:{
   secStudentInfo:"Student Information", secGuardianInfo:"Guardian & Contact", secDocsClass:"Class & Documents",
   dashPending:"Pending Admissions", dashStudents:"Total Students", dashToday:"Marked Today", dashMonthPct:"This Month's Attendance",
   hiddenHint:"Contact: 03225600912",
-  prayerAutoNote:"Calculated daily for Gujranwala, Punjab — updates automatically."
+  prayerAutoNote:"Calculated daily for Gujranwala, Punjab — updates automatically.",
+  finNavDashboard:"Dashboard", finNavRoznamcha:"Roz Namcha", finNavTotals:"Totals",
+  roznamchaIncome:"Income Register (آمدن)", roznamchaExpense:"Expense Register (خرچ)",
+  details:"Details", detailsPlaceholder:"e.g. Friday donation, electricity bill", pageNo:"Page No.", total:"Total",
+  printBtn:"Print", editBeforePrint:"Review Before Printing", cancel:"Cancel",
+  youAreInProfit:"You are currently in Profit", youAreInLoss:"You are currently in Loss",
+  entryAddedProfit:"Entry added. You are currently in Profit of", entryAddedLoss:"Entry added. You are currently in Loss of"
 },
 ur:{
   nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں"},
@@ -294,7 +300,13 @@ ur:{
   secStudentInfo:"طالب علم کی معلومات", secGuardianInfo:"سرپرست اور رابطہ", secDocsClass:"جماعت اور کاغذات",
   dashPending:"زیر التواء درخواستیں", dashStudents:"کل طلباء", dashToday:"آج کی حاضری", dashMonthPct:"اس ماہ کی حاضری",
   hiddenHint:"رابطہ: 03225600912",
-  prayerAutoNote:"گوجرانوالہ، پنجاب کے لیے روزانہ خودکار حساب — خود بخود اپڈیٹ ہوتا ہے۔"
+  prayerAutoNote:"گوجرانوالہ، پنجاب کے لیے روزانہ خودکار حساب — خود بخود اپڈیٹ ہوتا ہے۔",
+  finNavDashboard:"ڈیش بورڈ", finNavRoznamcha:"روزنامچہ", finNavTotals:"کل حساب",
+  roznamchaIncome:"آمدن رجسٹر", roznamchaExpense:"خرچ رجسٹر",
+  details:"تفصیل", detailsPlaceholder:"مثلاً جمعہ کا عطیہ، بجلی کا بل", pageNo:"صفحہ", total:"کل",
+  printBtn:"پرنٹ کریں", editBeforePrint:"پرنٹ سے پہلے جائزہ لیں", cancel:"منسوخ",
+  youAreInProfit:"آپ اس وقت نفع میں ہیں", youAreInLoss:"آپ اس وقت نقصان میں ہیں",
+  entryAddedProfit:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نفع میں ہیں:", entryAddedLoss:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نقصان میں ہیں:"
 }};
 
 const SUPABASE_URL = "https://upoegzpuuwrgmcyfgtez.supabase.co";
@@ -309,7 +321,7 @@ let adminOK=false, financeOK=false;
 let adminUser=null, adminPass=null, financeUser=null, financePass=null, adminSetupNeeded=false;
 let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"},{name:"Jummah",time:"2:10 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
 let admissions=[], students=[], attendance={}, finance=[], notifications=[];
-let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false;
+let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, financeView='dashboard', roznamchaType='income', roznamchaPrintMode=false, roznamchaEditRows=null, roznamchaPrintLang='ur';
 let hKeyCount=0, hKeyTimer=null;
 
 const el = id => document.getElementById(id);
@@ -665,6 +677,8 @@ function renderFinanceLogin(){
 }
 
 function renderFinance(){
+  if(financeView==='roznamcha') return renderRoznamcha();
+  if(financeView==='totals') return renderTotals();
   const income = finance.filter(f=>f.type==='income').reduce((s,f)=>s+Number(f.amount),0);
   const expense = finance.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
   const months = {};
@@ -672,6 +686,11 @@ function renderFinance(){
   const monthKeys = Object.keys(months).sort().reverse();
   return `
   <h2 class="page-title">${t().financeDashTitle} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
+  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
+    <button class="btn small" data-fv="dashboard" style="background:var(--teal-900);">${t().finNavDashboard}</button>
+    <button class="btn small secondary" data-fv="roznamcha">${t().finNavRoznamcha}</button>
+    <button class="btn small secondary" data-fv="totals">${t().finNavTotals}</button>
+  </div>
   <div class="stat-row">
     <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">Rs ${income.toLocaleString()}</div><div class="lbl">${t().totalIncome}</div></div>
     <div class="stat"><div class="icon">${svgIcon('wallet')}</div><div class="num">Rs ${expense.toLocaleString()}</div><div class="lbl">${t().totalExpense}</div></div>
@@ -714,6 +733,114 @@ function renderFinance(){
       <td class="row-actions"><button data-i="${idx}" class="delFin">${t().delete}</button></td></tr>`;
     }).join('')}</table>` : `<div class="empty">${t().noEntries}</div>`}
   </div>`;
+}
+
+function renderRoznamcha(){
+  if(roznamchaPrintMode) return renderRoznamchaPrint();
+  const type = roznamchaType;
+  const entries = finance.filter(f=>f.type===type).slice().sort((a,b)=> a.date<b.date?-1:1);
+  const total = entries.reduce((s,f)=>s+Number(f.amount),0);
+  return `
+  <h2 class="page-title">${t().finNavRoznamcha} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
+  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
+    <button class="btn small secondary" data-fv="dashboard">${t().finNavDashboard}</button>
+    <button class="btn small" style="background:var(--teal-900);">${t().finNavRoznamcha}</button>
+    <button class="btn small secondary" data-fv="totals">${t().finNavTotals}</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button class="btn small ${type==='income'?'':'secondary'}" data-rt="income">${t().roznamchaIncome}</button>
+    <button class="btn small ${type==='expense'?'':'secondary'}" data-rt="expense">${t().roznamchaExpense}</button>
+  </div>
+  <div class="card">
+    <h3>${type==='income' ? t().roznamchaIncome : t().roznamchaExpense}</h3>
+    <form id="roznForm" novalidate>
+      <div class="grid2">
+        <div><label>${t().dateL}</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label>${t().amount}</label><input name="amount" type="number" min="0"></div>
+      </div>
+      <label>${t().details}</label><input name="details" placeholder="${t().detailsPlaceholder}">
+      <div id="roznFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
+      <button class="btn" type="submit">${t().addEntry}</button>
+    </form>
+  </div>
+  <div id="roznStatusBox"></div>
+  <div class="card">
+    <h3>${type==='income'?t().roznamchaIncome:t().roznamchaExpense} — ${t().ledger}
+      <button class="btn secondary small" id="roznPrintBtn">${t().printBtn}</button>
+    </h3>
+    ${renderRoznamchaTable(entries)}
+    <div style="text-align:${lang==='ur'?'left':'right'};margin-top:10px;font-weight:700;color:var(--teal-900);">${t().total}: Rs ${total.toLocaleString()}</div>
+  </div>`;
+}
+
+function renderRoznamchaTable(entries){
+  if(!entries.length) return `<div class="empty">${t().noEntries}</div>`;
+  return `<table><tr><th>${t().dateL}</th><th>${t().details}</th><th>${t().pageNo}</th><th>${t().amount}</th></tr>
+    ${entries.map((f,i)=>`<tr><td>${f.date}</td><td>${f.category}${f.note?': '+f.note:''}</td><td>${i+1}</td><td>Rs ${Number(f.amount).toLocaleString()}</td></tr>`).join('')}
+  </table>`;
+}
+
+function renderTotals(){
+  const income = finance.filter(f=>f.type==='income').reduce((s,f)=>s+Number(f.amount),0);
+  const expense = finance.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
+  const net = income - expense;
+  const isProfit = net >= 0;
+  return `
+  <h2 class="page-title">${t().finNavTotals} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
+  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
+    <button class="btn small secondary" data-fv="dashboard">${t().finNavDashboard}</button>
+    <button class="btn small secondary" data-fv="roznamcha">${t().finNavRoznamcha}</button>
+    <button class="btn small" style="background:var(--teal-900);">${t().finNavTotals}</button>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">Rs ${income.toLocaleString()}</div><div class="lbl">${t().totalIncome}</div></div>
+    <div class="stat"><div class="icon">${svgIcon('wallet')}</div><div class="num">Rs ${expense.toLocaleString()}</div><div class="lbl">${t().totalExpense}</div></div>
+  </div>
+  <div class="card" style="text-align:center;padding:44px 24px;background:${isProfit?'var(--ok-bg)':'var(--bad-bg)'};border-color:${isProfit?'var(--ok)':'var(--bad)'};">
+    <div style="font-size:13px;color:${isProfit?'var(--ok)':'var(--bad)'};font-weight:700;text-transform:uppercase;letter-spacing:.05em;">${isProfit ? t().youAreInProfit : t().youAreInLoss}</div>
+    <div style="font-family:'Amiri',serif;font-size:42px;color:${isProfit?'var(--ok)':'var(--bad)'};margin-top:10px;">Rs ${Math.abs(net).toLocaleString()}</div>
+  </div>`;
+}
+
+function renderRoznamchaPrint(){
+  const type = roznamchaType;
+  const rows = roznamchaEditRows || [];
+  const isUr = roznamchaPrintLang === 'ur';
+  const L = isUr ? {
+    title:'روزنامچہ', sub: type==='income' ? 'تفصیل آمدن' : 'تفصیل خرچ',
+    date:'تاریخ', details:'تفصیل', page:'صفحہ', amount:'رقم روپیہ',
+  } : {
+    title:'Roz Namcha (Daily Register)', sub: type==='income' ? 'Income Details' : 'Expense Details',
+    date:'Date', details:'Details', page:'Page No.', amount:'Amount (Rs)',
+  };
+  return `
+  <h2 class="page-title">${t().editBeforePrint}</h2>
+  <div class="card" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center;">
+      <div class="lang-toggle">
+        <button data-plang="ur" class="${isUr?'on':''}" style="color:${isUr?'':'var(--teal-900)'};">اردو</button>
+        <button data-plang="en" class="${!isUr?'on':''}" style="color:${!isUr?'':'var(--teal-900)'};">English</button>
+      </div>
+      <div>
+        <button class="btn secondary small" id="roznCancelPrint">${t().cancel}</button>
+        <button class="btn small" id="roznDoPrint" style="margin-inline-start:8px;">${t().printBtn}</button>
+      </div>
+    </div>
+  </div>
+  <div id="printArea" dir="${isUr?'rtl':'ltr'}" style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px;">
+    <h2 style="text-align:center;margin:0 0 4px;">${L.title}</h2>
+    <p style="text-align:center;color:var(--muted);margin:0 0 20px;">${L.sub}</p>
+    <table style="width:100%;">
+      <tr><th>${L.date}</th><th>${L.details}</th><th>${L.page}</th><th>${L.amount}</th></tr>
+      ${rows.map((r,i)=>`<tr>
+        <td><input data-ri="${i}" data-field="date" value="${r.date}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
+        <td><input data-ri="${i}" data-field="details" value="${(r.category||'')+(r.note?': '+r.note:'')}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
+        <td style="text-align:center;">${i+1}</td>
+        <td><input data-ri="${i}" data-field="amount" value="${r.amount}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
+      </tr>`).join('')}
+    </table>
+  </div>
+  <style>@media print{ .topnav,.sitefoot,#debugBanner,.page-title,main > .card:not(#printArea){display:none !important;} #printArea{border:none !important;} body{background:#fff;} }</style>`;
 }
 
 function renderBell(){
@@ -905,6 +1032,52 @@ function bindEvents(){
   const goFinanceLink = el('goFinanceLink'); if(goFinanceLink) goFinanceLink.onclick = ()=>{ page='finance'; render(); };
   const goAdminLink = el('goAdminLink'); if(goAdminLink) goAdminLink.onclick = ()=>{ page='admin'; render(); };
 
+  document.querySelectorAll('[data-fv]').forEach(b=> b.onclick = ()=>{ financeView = b.dataset.fv; roznamchaPrintMode=false; render(); });
+  document.querySelectorAll('[data-rt]').forEach(b=> b.onclick = ()=>{ roznamchaType = b.dataset.rt; render(); });
+
+  const roznForm = el('roznForm');
+  if(roznForm) roznForm.onsubmit = async e=>{
+    e.preventDefault();
+    const f = new FormData(roznForm);
+    const amount = f.get('amount'), date = f.get('date'), details = f.get('details').trim();
+    if(!amount || Number(amount)<=0 || !date || !details){ el('roznFormErr').textContent = t().fillRequired; return; }
+    try{
+      const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:roznamchaType, p_category:details, p_amount:Number(amount), p_date:date, p_note:null});
+      if(error) throw error;
+      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note});
+      render();
+      const income = finance.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
+      const expense = finance.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
+      const net = income - expense;
+      const box = el('roznStatusBox');
+      if(box){
+        const isProfit = net >= 0;
+        box.innerHTML = `<div class="card" style="background:${isProfit?'var(--ok-bg)':'var(--bad-bg)'};border-color:${isProfit?'var(--ok)':'var(--bad)'};">
+          <p style="margin:0;color:${isProfit?'var(--ok)':'var(--bad)'};font-weight:700;">${isProfit ? t().entryAddedProfit : t().entryAddedLoss} Rs ${Math.abs(net).toLocaleString()}</p>
+        </div>`;
+      }
+    }catch(e){ showDebugError(e.message || String(e)); }
+  };
+
+  const roznPrintBtn = el('roznPrintBtn');
+  if(roznPrintBtn) roznPrintBtn.onclick = ()=>{
+    const entries = finance.filter(f=>f.type===roznamchaType).slice().sort((a,b)=> a.date<b.date?-1:1);
+    roznamchaEditRows = JSON.parse(JSON.stringify(entries));
+    roznamchaPrintMode = true;
+    render();
+  };
+  const roznCancelPrint = el('roznCancelPrint');
+  if(roznCancelPrint) roznCancelPrint.onclick = ()=>{ roznamchaPrintMode=false; render(); };
+  const roznDoPrint = el('roznDoPrint');
+  if(roznDoPrint) roznDoPrint.onclick = ()=>{ window.print(); };
+  document.querySelectorAll('[data-plang]').forEach(b=> b.onclick = ()=>{ roznamchaPrintLang = b.dataset.plang; render(); });
+  document.querySelectorAll('#printArea input[data-ri]').forEach(inp=> inp.onchange = ()=>{
+    const i = Number(inp.dataset.ri), field = inp.dataset.field;
+    if(field==='details'){ roznamchaEditRows[i].category = inp.value; roznamchaEditRows[i].note=null; }
+    else if(field==='amount'){ roznamchaEditRows[i].amount = inp.value; }
+    else { roznamchaEditRows[i][field] = inp.value; }
+  });
+
   const finLoginBtn = el('finLoginBtn');
   if(finLoginBtn) finLoginBtn.onclick = async ()=>{
     const u=el('finUser').value.trim(), p=el('finPass').value;
@@ -916,7 +1089,7 @@ function bindEvents(){
       else { el('finErr').textContent = t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
-  const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; page='home'; render(); renderNav(); };
+  const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; financeView='dashboard'; roznamchaPrintMode=false; page='home'; render(); renderNav(); };
 
   const finForm = el('finForm');
   const categorySelect = el('categorySelect');
