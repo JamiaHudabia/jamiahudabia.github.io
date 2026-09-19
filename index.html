@@ -255,7 +255,8 @@ en:{
   details:"Details", detailsPlaceholder:"e.g. Friday donation, electricity bill", pageNo:"Page No.", total:"Total",
   printBtn:"Print", editBeforePrint:"Review Before Printing", cancel:"Cancel",
   youAreInProfit:"You are currently in Profit", youAreInLoss:"You are currently in Loss",
-  entryAddedProfit:"Entry added. You are currently in Profit of", entryAddedLoss:"Entry added. You are currently in Loss of"
+  entryAddedProfit:"Entry added. You are currently in Profit of", entryAddedLoss:"Entry added. You are currently in Loss of",
+  donorName:"Donor Name", donorNamePlaceholder:"e.g. Muhammad Ali", printReceiptBtn:"Print Receipt"
 },
 ur:{
   nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں"},
@@ -306,7 +307,8 @@ ur:{
   details:"تفصیل", detailsPlaceholder:"مثلاً جمعہ کا عطیہ، بجلی کا بل", pageNo:"صفحہ", total:"کل",
   printBtn:"پرنٹ کریں", editBeforePrint:"پرنٹ سے پہلے جائزہ لیں", cancel:"منسوخ",
   youAreInProfit:"آپ اس وقت نفع میں ہیں", youAreInLoss:"آپ اس وقت نقصان میں ہیں",
-  entryAddedProfit:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نفع میں ہیں:", entryAddedLoss:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نقصان میں ہیں:"
+  entryAddedProfit:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نفع میں ہیں:", entryAddedLoss:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نقصان میں ہیں:",
+  donorName:"عطیہ دہندہ کا نام", donorNamePlaceholder:"مثلاً محمد علی", printReceiptBtn:"رسید پرنٹ کریں"
 }};
 
 const SUPABASE_URL = "https://upoegzpuuwrgmcyfgtez.supabase.co";
@@ -321,7 +323,7 @@ let adminOK=false, financeOK=false;
 let adminUser=null, adminPass=null, financeUser=null, financePass=null, adminSetupNeeded=false;
 let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"},{name:"Jummah",time:"2:10 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
 let admissions=[], students=[], attendance={}, finance=[], notifications=[];
-let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, financeView='dashboard', roznamchaType='income', roznamchaPrintMode=false, roznamchaEditRows=null, roznamchaPrintLang='ur';
+let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, financeView='dashboard', roznamchaType='income', roznamchaPrintMode=false, roznamchaEditRows=null, roznamchaPrintLang='ur', receiptEntry=null;
 let hKeyCount=0, hKeyTimer=null;
 
 const el = id => document.getElementById(id);
@@ -410,7 +412,7 @@ async function loadFinanceData(){
   try{
     const {data, error} = await sb.rpc('get_finance', {p_username:financeUser, p_password:financePass});
     if(error) throw error;
-    finance = (data||[]).map(f=>({id:f.id, type:f.type, category:f.category, amount:f.amount, date:f.date, note:f.note}));
+    finance = (data||[]).map(f=>({id:f.id, type:f.type, category:f.category, amount:f.amount, date:f.date, note:f.note, receiptNo:f.receipt_no}));
   }catch(e){ showDebugError(e.message || String(e)); }
 }
 
@@ -736,6 +738,7 @@ function renderFinance(){
 }
 
 function renderRoznamcha(){
+  if(receiptEntry) return renderReceiptPrint();
   if(roznamchaPrintMode) return renderRoznamchaPrint();
   const type = roznamchaType;
   const entries = finance.filter(f=>f.type===type).slice().sort((a,b)=> a.date<b.date?-1:1);
@@ -759,6 +762,7 @@ function renderRoznamcha(){
         <div><label>${t().amount}</label><input name="amount" type="number" min="0"></div>
       </div>
       <label>${t().details}</label><input name="details" placeholder="${t().detailsPlaceholder}">
+      ${type==='income' ? `<label>${t().donorName}</label><input name="donorName" placeholder="${t().donorNamePlaceholder}">` : ''}
       <div id="roznFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
       <button class="btn" type="submit">${t().addEntry}</button>
     </form>
@@ -775,8 +779,10 @@ function renderRoznamcha(){
 
 function renderRoznamchaTable(entries){
   if(!entries.length) return `<div class="empty">${t().noEntries}</div>`;
-  return `<table><tr><th>${t().dateL}</th><th>${t().details}</th><th>${t().pageNo}</th><th>${t().amount}</th></tr>
-    ${entries.map((f,i)=>`<tr><td>${f.date}</td><td>${f.category}${f.note?': '+f.note:''}</td><td>${i+1}</td><td>Rs ${Number(f.amount).toLocaleString()}</td></tr>`).join('')}
+  const isIncome = entries.length && entries[0].type === 'income';
+  return `<table><tr><th>${t().dateL}</th><th>${t().details}</th><th>${t().pageNo}</th><th>${t().amount}</th>${isIncome?`<th></th>`:''}</tr>
+    ${entries.map((f,i)=>`<tr><td>${f.date}</td><td>${f.category}${f.note?' · '+f.note:''}</td><td>${i+1}</td><td>Rs ${Number(f.amount).toLocaleString()}</td>
+      ${isIncome?`<td class="row-actions"><button class="printReceiptBtn" data-id="${f.id}">${t().printReceiptBtn}</button></td>`:''}</tr>`).join('')}
   </table>`;
 }
 
@@ -841,6 +847,31 @@ function renderRoznamchaPrint(){
     </table>
   </div>
   <style>@media print{ .topnav,.sitefoot,#debugBanner,.page-title,main > .card:not(#printArea){display:none !important;} #printArea{border:none !important;} body{background:#fff;} }</style>`;
+}
+
+function renderReceiptPrint(){
+  const e = receiptEntry;
+  return `
+  <h2 class="page-title">${t().printReceiptBtn}</h2>
+  <div class="card" style="margin-bottom:16px;">
+    <button class="btn secondary small" id="receiptCancelBtn">${t().cancel}</button>
+    <button class="btn small" id="receiptDoPrint" style="margin-inline-start:8px;">${t().printBtn}</button>
+  </div>
+  <div id="printArea" dir="rtl" style="background:#fff;border:3px double var(--gold);border-radius:10px;padding:30px;max-width:520px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:6px;">
+      <img src="${LOGO_IMG}" style="max-height:70px;object-fit:contain;">
+    </div>
+    <h2 style="text-align:center;margin:6px 0 18px;color:var(--gold);border-bottom:2px solid var(--gold);padding-bottom:10px;">رسید</h2>
+    <table style="width:100%;font-size:15px;">
+      <tr><td style="padding:10px 6px;color:var(--muted);width:40%;">سیریل نمبر:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${e.receiptNo || '—'}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.date}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.note || ''}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.category}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">Rs ${Number(e.amount).toLocaleString()}</td></tr>
+      <tr><td colspan="2" style="padding-top:40px;text-align:left;color:var(--muted);">دستخط مہتمم: ______________________</td></tr>
+    </table>
+  </div>
+  <style>@media print{ .topnav,.sitefoot,#debugBanner,.page-title,main > .card:not(#printArea){display:none !important;} #printArea{border:3px double #C9A24B !important;} body{background:#fff;} }</style>`;
 }
 
 function renderBell(){
@@ -1040,11 +1071,12 @@ function bindEvents(){
     e.preventDefault();
     const f = new FormData(roznForm);
     const amount = f.get('amount'), date = f.get('date'), details = f.get('details').trim();
+    const donorName = roznamchaType==='income' ? (f.get('donorName')||'').trim() : null;
     if(!amount || Number(amount)<=0 || !date || !details){ el('roznFormErr').textContent = t().fillRequired; return; }
     try{
-      const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:roznamchaType, p_category:details, p_amount:Number(amount), p_date:date, p_note:null});
+      const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:roznamchaType, p_category:details, p_amount:Number(amount), p_date:date, p_note:donorName});
       if(error) throw error;
-      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note});
+      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note, receiptNo:data.receipt_no});
       render();
       const income = finance.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
       const expense = finance.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
@@ -1058,6 +1090,15 @@ function bindEvents(){
       }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
+
+  document.querySelectorAll('.printReceiptBtn').forEach(b=> b.onclick = ()=>{
+    receiptEntry = finance.find(f=>f.id===b.dataset.id);
+    render();
+  });
+  const receiptCancelBtn = el('receiptCancelBtn');
+  if(receiptCancelBtn) receiptCancelBtn.onclick = ()=>{ receiptEntry=null; render(); };
+  const receiptDoPrint = el('receiptDoPrint');
+  if(receiptDoPrint) receiptDoPrint.onclick = ()=>{ window.print(); };
 
   const roznPrintBtn = el('roznPrintBtn');
   if(roznPrintBtn) roznPrintBtn.onclick = ()=>{
@@ -1103,7 +1144,7 @@ function bindEvents(){
     try{
       const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:f.get('type'), p_category:cat||'Other', p_amount:Number(amount), p_date:date, p_note:f.get('note')});
       if(error) throw error;
-      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note});
+      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note, receiptNo:data.receipt_no});
       render();
     }catch(e){ showDebugError(e.message || String(e)); }
   };
