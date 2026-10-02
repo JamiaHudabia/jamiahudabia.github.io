@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --teal-950:#0B2622; --teal-900:#0E332C; --teal-800:#154A40; --teal-700:#1C5C4F; --teal-600:#276F5F;
@@ -206,7 +207,7 @@ const ICONS = {
 
 const T = {
 en:{
-  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance"},
+  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance",mycontrib:"My Contribution"},
   footNote:"Jamia Masjid Hudabia & Jamia Hudabia Taleem Al Quran · Contact: 03225600912",
   homeTitle:"Welcome",homeSub:"Prayer times, announcements, and community info.",
   heroEyebrow:"Assalamu Alaikum", heroLine:"A place of worship, learning, and community.",
@@ -256,10 +257,17 @@ en:{
   printBtn:"Print", editBeforePrint:"Review Before Printing", cancel:"Cancel",
   youAreInProfit:"You are currently in Profit", youAreInLoss:"You are currently in Loss",
   entryAddedProfit:"Entry added. You are currently in Profit of", entryAddedLoss:"Entry added. You are currently in Loss of",
-  donorName:"Donor Name", donorNamePlaceholder:"e.g. Muhammad Ali", printReceiptBtn:"Print Receipt"
+  donorName:"Donor Name", donorNamePlaceholder:"e.g. Muhammad Ali", printReceiptBtn:"Print Receipt",
+  raseedTitle:"Issue Receipt", raseedSub:"Enter donor details to issue a new receipt.", donorContact:"Contact Number (optional)",
+  accessCodeLabel:"Donor's Private Code", accessCodeNote:"Keep this code safe — it's the only way to check contribution history.",
+  scanToCheck:"Scan to check your contribution", issueAnother:"Issue Another Receipt",
+  mycontribTitle:"Check My Contribution", mycontribSub:"Enter your private code to see your giving history.",
+  codePlaceholder:"Enter your 6-digit code", totalReceipts:"Total Receipts", totalGiven:"Total Given",
+  monthsGiven:"Months Given", monthsMissing:"Months Missing", noCodeResult:"No record found for this code.",
+  receiptHistoryTitle:"Receipt History"
 },
 ur:{
-  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں"},
+  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں",mycontrib:"میرا عطیہ"},
   footNote:"جامع مسجد حدیبیہ اور جامعہ حدیبیہ تعلیم القرآن · رابطہ: 03225600912",
   homeTitle:"خوش آمدید",homeSub:"نماز کے اوقات، اعلانات اور کمیونٹی کی معلومات۔",
   heroEyebrow:"السلام علیکم", heroLine:"عبادت، تعلیم اور برادری کا مرکز۔",
@@ -308,7 +316,14 @@ ur:{
   printBtn:"پرنٹ کریں", editBeforePrint:"پرنٹ سے پہلے جائزہ لیں", cancel:"منسوخ",
   youAreInProfit:"آپ اس وقت نفع میں ہیں", youAreInLoss:"آپ اس وقت نقصان میں ہیں",
   entryAddedProfit:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نفع میں ہیں:", entryAddedLoss:"اندراج شامل ہوگیا۔ آپ اس وقت اس قدر نقصان میں ہیں:",
-  donorName:"عطیہ دہندہ کا نام", donorNamePlaceholder:"مثلاً محمد علی", printReceiptBtn:"رسید پرنٹ کریں"
+  donorName:"عطیہ دہندہ کا نام", donorNamePlaceholder:"مثلاً محمد علی", printReceiptBtn:"رسید پرنٹ کریں",
+  raseedTitle:"رسید جاری کریں", raseedSub:"نئی رسید جاری کرنے کے لیے عطیہ دہندہ کی تفصیلات درج کریں۔", donorContact:"رابطہ نمبر (اختیاری)",
+  accessCodeLabel:"عطیہ دہندہ کا ذاتی کوڈ", accessCodeNote:"یہ کوڈ محفوظ رکھیں — یہی عطیات کی تاریخ چیک کرنے کا واحد طریقہ ہے۔",
+  scanToCheck:"اپنا عطیہ چیک کرنے کے لیے اسکین کریں", issueAnother:"ایک اور رسید جاری کریں",
+  mycontribTitle:"میرا عطیہ چیک کریں", mycontribSub:"اپنی عطیات کی تاریخ دیکھنے کے لیے اپنا ذاتی کوڈ درج کریں۔",
+  codePlaceholder:"اپنا 6 ہندسوں کا کوڈ درج کریں", totalReceipts:"کل رسیدیں", totalGiven:"کل عطیہ",
+  monthsGiven:"ادا شدہ مہینے", monthsMissing:"باقی مہینے", noCodeResult:"اس کوڈ کے لیے کوئی ریکارڈ نہیں ملا۔",
+  receiptHistoryTitle:"رسیدوں کی تاریخ"
 }};
 
 const SUPABASE_URL = "https://upoegzpuuwrgmcyfgtez.supabase.co";
@@ -323,7 +338,8 @@ let adminOK=false, financeOK=false;
 let adminUser=null, adminPass=null, financeUser=null, financePass=null, adminSetupNeeded=false;
 let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"},{name:"Jummah",time:"2:10 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
 let admissions=[], students=[], attendance={}, finance=[], notifications=[];
-let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, financeView='dashboard', roznamchaType='income', roznamchaPrintMode=false, roznamchaEditRows=null, roznamchaPrintLang='ur', receiptEntry=null;
+let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, mycontribCode='';
+let raseedResult=null, mycontribResult=null;
 let hKeyCount=0, hKeyTimer=null;
 
 const el = id => document.getElementById(id);
@@ -408,13 +424,7 @@ async function loadAdminData(){
   }catch(e){ showDebugError(e.message || String(e)); }
 }
 
-async function loadFinanceData(){
-  try{
-    const {data, error} = await sb.rpc('get_finance', {p_username:financeUser, p_password:financePass});
-    if(error) throw error;
-    finance = (data||[]).map(f=>({id:f.id, type:f.type, category:f.category, amount:f.amount, date:f.date, note:f.note, receiptNo:f.receipt_no}));
-  }catch(e){ showDebugError(e.message || String(e)); }
-}
+
 
 async function pushSiteContent(){
   try{
@@ -435,7 +445,7 @@ function setLang(l){
 }
 
 function renderNav(){
-  const items=[['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa'],['check',t().nav.check,'check']];
+  const items=[['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa'],['check',t().nav.check,'check'],['mycontrib',t().nav.mycontrib,'mycontrib']];
   el('navList').innerHTML = items.map(([id,label,icon])=>`<button data-p="${id}" class="${page===id?'active':''}">${label}</button>`).join('');
   [...el('navList').children].forEach(b=> b.onclick=()=>{ page=b.dataset.p; render(); renderNav(); });
   el('mobileDrawerPanel').innerHTML = items.map(([id,label])=>`<button data-p="${id}" class="navitem ${page===id?'active':''}">${label}</button>`).join('');
@@ -453,6 +463,7 @@ function render(){
   if(page==='check') root.innerHTML = renderCheck();
   if(page==='admin') root.innerHTML = adminOK ? renderAdminPanel() : renderAdminLogin();
   if(page==='finance') root.innerHTML = financeOK ? renderFinance() : renderFinanceLogin();
+  if(page==='mycontrib') root.innerHTML = renderMyContribution();
   bindEvents();
   renderBell();
 }
@@ -679,183 +690,36 @@ function renderFinanceLogin(){
 }
 
 function renderFinance(){
-  if(financeView==='roznamcha') return renderRoznamcha();
-  if(financeView==='totals') return renderTotals();
-  const income = finance.filter(f=>f.type==='income').reduce((s,f)=>s+Number(f.amount),0);
-  const expense = finance.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
-  const months = {};
-  finance.forEach(f=>{ const m=f.date.slice(0,7); if(!months[m]) months[m]={income:0,expense:0}; months[m][f.type]+=Number(f.amount); });
-  const monthKeys = Object.keys(months).sort().reverse();
+  if(!financeOK) return renderFinanceLogin();
+  if(raseedResult) return renderRaseedReceiptPrint();
   return `
-  <h2 class="page-title">${t().financeDashTitle} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
-  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
-    <button class="btn small" data-fv="dashboard" style="background:var(--teal-900);">${t().finNavDashboard}</button>
-    <button class="btn small secondary" data-fv="roznamcha">${t().finNavRoznamcha}</button>
-    <button class="btn small secondary" data-fv="totals">${t().finNavTotals}</button>
-  </div>
-  <div class="stat-row">
-    <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">Rs ${income.toLocaleString()}</div><div class="lbl">${t().totalIncome}</div></div>
-    <div class="stat"><div class="icon">${svgIcon('wallet')}</div><div class="num">Rs ${expense.toLocaleString()}</div><div class="lbl">${t().totalExpense}</div></div>
-    <div class="stat"><div class="icon">${svgIcon('check2')}</div><div class="num">Rs ${(income-expense).toLocaleString()}</div><div class="lbl">${t().balance}</div></div>
-  </div>
+  <h2 class="page-title">${t().raseedTitle} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
+  <p class="page-sub">${t().raseedSub}</p>
   <div class="card">
-    <h3>${t().addEntry}</h3>
-    <form id="finForm" novalidate>
+    <form id="raseedForm" novalidate>
       <div class="grid2">
-        <div><label>${t().type}</label><select name="type"><option value="income">${t().income}</option><option value="expense">${t().expense}</option></select></div>
-        <div><label>${t().category}</label>
-          <select name="categorySelect" id="categorySelect">
-            <option value="Donation">${t().catDonation}</option><option value="Zakat">${t().catZakat}</option>
-            <option value="Utility Bill">${t().catUtility}</option><option value="Salary">${t().catSalary}</option>
-            <option value="Maintenance">${t().catMaintenance}</option><option value="__other">${t().catOther}</option>
-          </select>
-          <input name="categoryOther" id="categoryOther" style="display:none;margin-top:8px;" placeholder="${t().category}">
-        </div>
+        <div><label>${t().donorName}</label><input name="name"></div>
+        <div><label>${t().donorContact}</label><input name="contact"></div>
       </div>
       <div class="grid2">
-        <div><label>${t().amount}</label><input name="amount" type="number" min="0"></div>
-        <div><label>${t().dateL}</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-      </div>
-      <label>${t().noteL}</label><input name="note">
-      <div id="finFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
-      <button class="btn" type="submit">${t().addEntry}</button>
-    </form>
-  </div>
-  <div class="card">
-    <h3>${t().monthlySummary}</h3>
-    ${monthKeys.length ? `<table><tr><th>${t().monthL}</th><th>${t().totalIncome}</th><th>${t().totalExpense}</th><th>${t().balance}</th></tr>${monthKeys.map(m=>`
-      <tr><td>${m}</td><td>Rs ${months[m].income.toLocaleString()}</td><td>Rs ${months[m].expense.toLocaleString()}</td><td>Rs ${(months[m].income-months[m].expense).toLocaleString()}</td></tr>`).join('')}</table>`
-      : `<div class="empty">${t().noEntries}</div>`}
-  </div>
-  <div class="card">
-    <h3>${t().ledger} <button class="btn secondary small" id="csvBtn">${t().exportCsv}</button></h3>
-    ${finance.length? `<table><tr><th>${t().dateL}</th><th>${t().type}</th><th>${t().category}</th><th>${t().amount}</th><th>${t().noteL}</th><th></th></tr>${finance.slice().reverse().map(f=>{
-      const idx=finance.indexOf(f);
-      return `<tr><td>${f.date}</td><td><span class="pill ${f.type}">${t()[f.type]}</span></td><td>${f.category}</td><td>Rs ${Number(f.amount).toLocaleString()}</td><td>${f.note||''}</td>
-      <td class="row-actions"><button data-i="${idx}" class="delFin">${t().delete}</button></td></tr>`;
-    }).join('')}</table>` : `<div class="empty">${t().noEntries}</div>`}
-  </div>`;
-}
-
-function renderRoznamcha(){
-  if(receiptEntry) return renderReceiptPrint();
-  if(roznamchaPrintMode) return renderRoznamchaPrint();
-  const type = roznamchaType;
-  const entries = finance.filter(f=>f.type===type).slice().sort((a,b)=> a.date<b.date?-1:1);
-  const total = entries.reduce((s,f)=>s+Number(f.amount),0);
-  return `
-  <h2 class="page-title">${t().finNavRoznamcha} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
-  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
-    <button class="btn small secondary" data-fv="dashboard">${t().finNavDashboard}</button>
-    <button class="btn small" style="background:var(--teal-900);">${t().finNavRoznamcha}</button>
-    <button class="btn small secondary" data-fv="totals">${t().finNavTotals}</button>
-  </div>
-  <div style="display:flex;gap:8px;margin-bottom:20px;">
-    <button class="btn small ${type==='income'?'':'secondary'}" data-rt="income">${t().roznamchaIncome}</button>
-    <button class="btn small ${type==='expense'?'':'secondary'}" data-rt="expense">${t().roznamchaExpense}</button>
-  </div>
-  <div class="card">
-    <h3>${type==='income' ? t().roznamchaIncome : t().roznamchaExpense}</h3>
-    <form id="roznForm" novalidate>
-      <div class="grid2">
-        <div><label>${t().dateL}</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label>${t().category}</label><input name="category" placeholder="e.g. Monthly Chanda"></div>
         <div><label>${t().amount}</label><input name="amount" type="number" min="0"></div>
       </div>
-      <label>${t().details}</label><input name="details" placeholder="${t().detailsPlaceholder}">
-      ${type==='income' ? `<label>${t().donorName}</label><input name="donorName" placeholder="${t().donorNamePlaceholder}">` : ''}
-      <div id="roznFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
-      <button class="btn" type="submit">${t().addEntry}</button>
+      <label>${t().dateL}</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}">
+      <div id="raseedFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
+      <button class="btn" type="submit">${t().raseedTitle}</button>
     </form>
-  </div>
-  <div id="roznStatusBox"></div>
-  <div class="card">
-    <h3>${type==='income'?t().roznamchaIncome:t().roznamchaExpense} — ${t().ledger}
-      <button class="btn secondary small" id="roznPrintBtn">${t().printBtn}</button>
-    </h3>
-    ${renderRoznamchaTable(entries)}
-    <div style="text-align:${lang==='ur'?'left':'right'};margin-top:10px;font-weight:700;color:var(--teal-900);">${t().total}: Rs ${total.toLocaleString()}</div>
   </div>`;
 }
 
-function renderRoznamchaTable(entries){
-  if(!entries.length) return `<div class="empty">${t().noEntries}</div>`;
-  const isIncome = entries.length && entries[0].type === 'income';
-  return `<table><tr><th>${t().dateL}</th><th>${t().details}</th><th>${t().pageNo}</th><th>${t().amount}</th>${isIncome?`<th></th>`:''}</tr>
-    ${entries.map((f,i)=>`<tr><td>${f.date}</td><td>${f.category}${f.note?' · '+f.note:''}</td><td>${i+1}</td><td>Rs ${Number(f.amount).toLocaleString()}</td>
-      ${isIncome?`<td class="row-actions"><button class="printReceiptBtn" data-id="${f.id}">${t().printReceiptBtn}</button></td>`:''}</tr>`).join('')}
-  </table>`;
-}
-
-function renderTotals(){
-  const income = finance.filter(f=>f.type==='income').reduce((s,f)=>s+Number(f.amount),0);
-  const expense = finance.filter(f=>f.type==='expense').reduce((s,f)=>s+Number(f.amount),0);
-  const net = income - expense;
-  const isProfit = net >= 0;
+function renderRaseedReceiptPrint(){
+  const r = raseedResult;
+  const checkUrl = `${location.origin}${location.pathname}#mycontrib-${r.access_code}`;
   return `
-  <h2 class="page-title">${t().finNavTotals} <button class="btn secondary small" id="finLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
-  <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;">
-    <button class="btn small secondary" data-fv="dashboard">${t().finNavDashboard}</button>
-    <button class="btn small secondary" data-fv="roznamcha">${t().finNavRoznamcha}</button>
-    <button class="btn small" style="background:var(--teal-900);">${t().finNavTotals}</button>
-  </div>
-  <div class="stat-row">
-    <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">Rs ${income.toLocaleString()}</div><div class="lbl">${t().totalIncome}</div></div>
-    <div class="stat"><div class="icon">${svgIcon('wallet')}</div><div class="num">Rs ${expense.toLocaleString()}</div><div class="lbl">${t().totalExpense}</div></div>
-  </div>
-  <div class="card" style="text-align:center;padding:44px 24px;background:${isProfit?'var(--ok-bg)':'var(--bad-bg)'};border-color:${isProfit?'var(--ok)':'var(--bad)'};">
-    <div style="font-size:13px;color:${isProfit?'var(--ok)':'var(--bad)'};font-weight:700;text-transform:uppercase;letter-spacing:.05em;">${isProfit ? t().youAreInProfit : t().youAreInLoss}</div>
-    <div style="font-family:'Amiri',serif;font-size:42px;color:${isProfit?'var(--ok)':'var(--bad)'};margin-top:10px;">Rs ${Math.abs(net).toLocaleString()}</div>
-  </div>`;
-}
-
-function renderRoznamchaPrint(){
-  const type = roznamchaType;
-  const rows = roznamchaEditRows || [];
-  const isUr = roznamchaPrintLang === 'ur';
-  const L = isUr ? {
-    title:'روزنامچہ', sub: type==='income' ? 'تفصیل آمدن' : 'تفصیل خرچ',
-    date:'تاریخ', details:'تفصیل', page:'صفحہ', amount:'رقم روپیہ',
-  } : {
-    title:'Roz Namcha (Daily Register)', sub: type==='income' ? 'Income Details' : 'Expense Details',
-    date:'Date', details:'Details', page:'Page No.', amount:'Amount (Rs)',
-  };
-  return `
-  <h2 class="page-title">${t().editBeforePrint}</h2>
+  <h2 class="page-title">${t().raseedTitle}</h2>
   <div class="card" style="margin-bottom:16px;">
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;align-items:center;">
-      <div class="lang-toggle">
-        <button data-plang="ur" class="${isUr?'on':''}" style="color:${isUr?'':'var(--teal-900)'};">اردو</button>
-        <button data-plang="en" class="${!isUr?'on':''}" style="color:${!isUr?'':'var(--teal-900)'};">English</button>
-      </div>
-      <div>
-        <button class="btn secondary small" id="roznCancelPrint">${t().cancel}</button>
-        <button class="btn small" id="roznDoPrint" style="margin-inline-start:8px;">${t().printBtn}</button>
-      </div>
-    </div>
-  </div>
-  <div id="printArea" dir="${isUr?'rtl':'ltr'}" style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:26px;">
-    <h2 style="text-align:center;margin:0 0 4px;">${L.title}</h2>
-    <p style="text-align:center;color:var(--muted);margin:0 0 20px;">${L.sub}</p>
-    <table style="width:100%;">
-      <tr><th>${L.date}</th><th>${L.details}</th><th>${L.page}</th><th>${L.amount}</th></tr>
-      ${rows.map((r,i)=>`<tr>
-        <td><input data-ri="${i}" data-field="date" value="${r.date}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
-        <td><input data-ri="${i}" data-field="details" value="${(r.category||'')+(r.note?': '+r.note:'')}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
-        <td style="text-align:center;">${i+1}</td>
-        <td><input data-ri="${i}" data-field="amount" value="${r.amount}" style="border:none;background:transparent;padding:4px;width:100%;"></td>
-      </tr>`).join('')}
-    </table>
-  </div>
-  <style>@media print{ .topnav,.sitefoot,#debugBanner,.page-title,main > .card:not(#printArea){display:none !important;} #printArea{border:none !important;} body{background:#fff;} }</style>`;
-}
-
-function renderReceiptPrint(){
-  const e = receiptEntry;
-  return `
-  <h2 class="page-title">${t().printReceiptBtn}</h2>
-  <div class="card" style="margin-bottom:16px;">
-    <button class="btn secondary small" id="receiptCancelBtn">${t().cancel}</button>
-    <button class="btn small" id="receiptDoPrint" style="margin-inline-start:8px;">${t().printBtn}</button>
+    <button class="btn secondary small" id="raseedIssueAnother">${t().issueAnother}</button>
+    <button class="btn small" id="raseedDoPrint" style="margin-inline-start:8px;">${t().printBtn}</button>
   </div>
   <div id="printArea" dir="rtl" style="background:#fff;border:3px double var(--gold);border-radius:10px;padding:30px;max-width:520px;margin:0 auto;">
     <div style="text-align:center;margin-bottom:6px;">
@@ -863,15 +727,77 @@ function renderReceiptPrint(){
     </div>
     <h2 style="text-align:center;margin:6px 0 18px;color:var(--gold);border-bottom:2px solid var(--gold);padding-bottom:10px;">رسید</h2>
     <table style="width:100%;font-size:15px;">
-      <tr><td style="padding:10px 6px;color:var(--muted);width:40%;">سیریل نمبر:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${e.receiptNo || '—'}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.date}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.note || ''}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${e.category}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">Rs ${Number(e.amount).toLocaleString()}</td></tr>
-      <tr><td colspan="2" style="padding-top:40px;text-align:left;color:var(--muted);">دستخط مہتمم: ______________________</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);width:40%;">سیریل نمبر:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${r.receipt_no}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.date}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.donor_name}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.category}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">Rs ${Number(r.amount).toLocaleString()}</td></tr>
+      <tr><td colspan="2" style="padding-top:30px;text-align:left;color:var(--muted);">دستخط مہتمم: ______________________</td></tr>
     </table>
+    <div style="margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:14px;">
+      <div id="raseedQrBox"></div>
+      <div style="font-size:12px;color:var(--muted);">
+        <div style="font-weight:700;color:var(--teal-900);font-size:13px;">${t().accessCodeLabel}: ${r.access_code}</div>
+        <div style="margin-top:4px;">${t().accessCodeNote}</div>
+        <div style="margin-top:6px;">${t().scanToCheck} — jamiahudabia.github.io</div>
+      </div>
+    </div>
   </div>
   <style>@media print{ .topnav,.sitefoot,#debugBanner,.page-title,main > .card:not(#printArea){display:none !important;} #printArea{border:3px double #C9A24B !important;} body{background:#fff;} }</style>`;
+}
+
+function renderMyContribution(){
+  return `
+  <div class="search-hero">
+    <h2>${t().mycontribTitle}</h2>
+    <p>${t().mycontribSub}</p>
+    <div class="search-box">
+      <input id="mycontribInput" placeholder="${t().codePlaceholder}" value="${mycontribCode||''}">
+      <button class="btn" id="mycontribBtn" style="margin:0;">${t().search}</button>
+    </div>
+  </div>
+  <div id="mycontribResult">${renderMycontribResultHTML()}</div>`;
+}
+
+function renderMycontribResultHTML(){
+  if(mycontribResult === null) return '';
+  if(mycontribResult === 'notfound') return `<div class="card"><div class="empty">${t().noCodeResult}</div></div>`;
+  const {data, total, monthsGiven, missing} = mycontribResult;
+  return `
+    <div class="stat-row">
+      <div class="stat"><div class="num">${data.length}</div><div class="lbl">${t().totalReceipts}</div></div>
+      <div class="stat"><div class="num">Rs ${total.toLocaleString()}</div><div class="lbl">${t().totalGiven}</div></div>
+    </div>
+    <div class="card">
+      <h3>${data[0].donor_name}</h3>
+      <p style="font-size:13px;color:var(--ok);"><b>${t().monthsGiven}:</b> ${monthsGiven.join(', ')}</p>
+      ${missing.length ? `<p style="font-size:13px;color:var(--bad);"><b>${t().monthsMissing}:</b> ${missing.join(', ')}</p>` : ''}
+    </div>
+    <div class="card">
+      <h3>${t().receiptHistoryTitle}</h3>
+      <table><tr><th>${t().dateL}</th><th>${t().pageNo}</th><th>${t().category}</th><th>${t().amount}</th></tr>
+        ${data.map(r=>`<tr><td>${r.date}</td><td class="roll">#${r.receipt_no}</td><td>${r.category}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
+      </table>
+    </div>`;
+}
+
+async function doMycontribSearch(code){
+  if(!code) return;
+  try{
+    const {data, error} = await sb.rpc('get_donor_contributions', {p_code:code});
+    if(error) throw error;
+    if(!data || !data.length){ mycontribResult = 'notfound'; render(); return; }
+    const total = data.reduce((s,r)=>s+Number(r.amount),0);
+    const monthsGivenArr = [...new Set(data.map(r=>r.date.slice(0,7)))].sort();
+    const firstMonth = monthsGivenArr[0];
+    const allMonths = [];
+    let cur = new Date(firstMonth+'-01');
+    const now = new Date();
+    while(cur <= now){ allMonths.push(cur.toISOString().slice(0,7)); cur.setMonth(cur.getMonth()+1); }
+    const missing = allMonths.filter(m=>!monthsGivenArr.includes(m));
+    mycontribResult = {data, total, monthsGiven: monthsGivenArr, missing};
+    render();
+  }catch(e){ showDebugError(e.message || String(e)); }
 }
 
 function renderBell(){
@@ -1063,61 +989,36 @@ function bindEvents(){
   const goFinanceLink = el('goFinanceLink'); if(goFinanceLink) goFinanceLink.onclick = ()=>{ page='finance'; render(); };
   const goAdminLink = el('goAdminLink'); if(goAdminLink) goAdminLink.onclick = ()=>{ page='admin'; render(); };
 
-  document.querySelectorAll('[data-fv]').forEach(b=> b.onclick = ()=>{ financeView = b.dataset.fv; roznamchaPrintMode=false; render(); });
-  document.querySelectorAll('[data-rt]').forEach(b=> b.onclick = ()=>{ roznamchaType = b.dataset.rt; render(); });
-
-  const roznForm = el('roznForm');
-  if(roznForm) roznForm.onsubmit = async e=>{
+  const raseedForm = el('raseedForm');
+  if(raseedForm) raseedForm.onsubmit = async e=>{
     e.preventDefault();
-    const f = new FormData(roznForm);
-    const amount = f.get('amount'), date = f.get('date'), details = f.get('details').trim();
-    const donorName = roznamchaType==='income' ? (f.get('donorName')||'').trim() : null;
-    if(!amount || Number(amount)<=0 || !date || !details){ el('roznFormErr').textContent = t().fillRequired; return; }
+    const f = new FormData(raseedForm);
+    const name=f.get('name').trim(), category=f.get('category').trim(), amount=f.get('amount'), date=f.get('date');
+    if(!name || !category || !amount || Number(amount)<=0 || !date){ el('raseedFormErr').textContent = t().fillRequired; return; }
     try{
-      const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:roznamchaType, p_category:details, p_amount:Number(amount), p_date:date, p_note:donorName});
+      const {data, error} = await sb.rpc('issue_receipt', {p_username:financeUser, p_password:financePass, p_name:name, p_contact:f.get('contact'), p_category:category, p_amount:Number(amount), p_date:date});
       if(error) throw error;
-      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note, receiptNo:data.receipt_no});
+      raseedResult = data[0];
       render();
-      const income = finance.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount),0);
-      const expense = finance.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount),0);
-      const net = income - expense;
-      const box = el('roznStatusBox');
-      if(box){
-        const isProfit = net >= 0;
-        box.innerHTML = `<div class="card" style="background:${isProfit?'var(--ok-bg)':'var(--bad-bg)'};border-color:${isProfit?'var(--ok)':'var(--bad)'};">
-          <p style="margin:0;color:${isProfit?'var(--ok)':'var(--bad)'};font-weight:700;">${isProfit ? t().entryAddedProfit : t().entryAddedLoss} Rs ${Math.abs(net).toLocaleString()}</p>
-        </div>`;
-      }
+      setTimeout(()=>{
+        const box = el('raseedQrBox');
+        if(box && window.QRCode){
+          const url = `${location.origin}${location.pathname}#mycontrib-${raseedResult.access_code}`;
+          new QRCode(box, {text:url, width:90, height:90, colorDark:'#0E332C', colorLight:'#ffffff'});
+        }
+      }, 50);
     }catch(e){ showDebugError(e.message || String(e)); }
   };
+  const raseedIssueAnother = el('raseedIssueAnother');
+  if(raseedIssueAnother) raseedIssueAnother.onclick = ()=>{ raseedResult=null; render(); };
+  const raseedDoPrint = el('raseedDoPrint');
+  if(raseedDoPrint) raseedDoPrint.onclick = ()=>{ window.print(); };
 
-  document.querySelectorAll('.printReceiptBtn').forEach(b=> b.onclick = ()=>{
-    receiptEntry = finance.find(f=>f.id===b.dataset.id);
-    render();
-  });
-  const receiptCancelBtn = el('receiptCancelBtn');
-  if(receiptCancelBtn) receiptCancelBtn.onclick = ()=>{ receiptEntry=null; render(); };
-  const receiptDoPrint = el('receiptDoPrint');
-  if(receiptDoPrint) receiptDoPrint.onclick = ()=>{ window.print(); };
-
-  const roznPrintBtn = el('roznPrintBtn');
-  if(roznPrintBtn) roznPrintBtn.onclick = ()=>{
-    const entries = finance.filter(f=>f.type===roznamchaType).slice().sort((a,b)=> a.date<b.date?-1:1);
-    roznamchaEditRows = JSON.parse(JSON.stringify(entries));
-    roznamchaPrintMode = true;
-    render();
+  const mycontribBtn = el('mycontribBtn');
+  if(mycontribBtn) mycontribBtn.onclick = ()=>{
+    mycontribCode = el('mycontribInput').value.trim();
+    doMycontribSearch(mycontribCode);
   };
-  const roznCancelPrint = el('roznCancelPrint');
-  if(roznCancelPrint) roznCancelPrint.onclick = ()=>{ roznamchaPrintMode=false; render(); };
-  const roznDoPrint = el('roznDoPrint');
-  if(roznDoPrint) roznDoPrint.onclick = ()=>{ window.print(); };
-  document.querySelectorAll('[data-plang]').forEach(b=> b.onclick = ()=>{ roznamchaPrintLang = b.dataset.plang; render(); });
-  document.querySelectorAll('#printArea input[data-ri]').forEach(inp=> inp.onchange = ()=>{
-    const i = Number(inp.dataset.ri), field = inp.dataset.field;
-    if(field==='details'){ roznamchaEditRows[i].category = inp.value; roznamchaEditRows[i].note=null; }
-    else if(field==='amount'){ roznamchaEditRows[i].amount = inp.value; }
-    else { roznamchaEditRows[i][field] = inp.value; }
-  });
 
   const finLoginBtn = el('finLoginBtn');
   if(finLoginBtn) finLoginBtn.onclick = async ()=>{
@@ -1126,43 +1027,11 @@ function bindEvents(){
     try{
       const {data, error} = await sb.rpc('verify_login', {p_username:u, p_password:p});
       if(error) throw error;
-      if(data === 'finance'){ financeUser=u; financePass=p; financeOK=true; await loadFinanceData(); render(); }
+      if(data === 'finance'){ financeUser=u; financePass=p; financeOK=true; render(); }
       else { el('finErr').textContent = t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
-  const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; financeView='dashboard'; roznamchaPrintMode=false; page='home'; render(); renderNav(); };
-
-  const finForm = el('finForm');
-  const categorySelect = el('categorySelect');
-  if(categorySelect) categorySelect.onchange = ()=>{ el('categoryOther').style.display = categorySelect.value==='__other' ? 'block' : 'none'; };
-  if(finForm) finForm.onsubmit = async e=>{
-    e.preventDefault();
-    const f=new FormData(finForm);
-    const amount=f.get('amount'), date=f.get('date');
-    if(!amount || Number(amount)<=0 || !date){ el('finFormErr').textContent = t().fillRequired; return; }
-    const cat = f.get('categorySelect')==='__other' ? f.get('categoryOther').trim() : f.get('categorySelect');
-    try{
-      const {data, error} = await sb.rpc('add_finance_entry', {p_username:financeUser, p_password:financePass, p_type:f.get('type'), p_category:cat||'Other', p_amount:Number(amount), p_date:date, p_note:f.get('note')});
-      if(error) throw error;
-      finance.push({id:data.id, type:data.type, category:data.category, amount:data.amount, date:data.date, note:data.note, receiptNo:data.receipt_no});
-      render();
-    }catch(e){ showDebugError(e.message || String(e)); }
-  };
-  document.querySelectorAll('.delFin').forEach(b=> b.onclick = async ()=>{
-    const idx = Number(b.dataset.i); const rec = finance[idx];
-    try{
-      const {error} = await sb.rpc('delete_finance_entry', {p_username:financeUser, p_password:financePass, p_id:rec.id});
-      if(error) throw error;
-      finance.splice(idx,1); render();
-    }catch(e){ showDebugError(e.message || String(e)); }
-  });
-  const csvBtn = el('csvBtn');
-  if(csvBtn) csvBtn.onclick = ()=>{
-    const rows=[['Date','Type','Category','Amount','Note'], ...finance.map(f=>[f.date,f.type,f.category,f.amount,f.note||''])];
-    const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv],{type:'text/csv'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='finance-ledger.csv'; a.click();
-  };
+  const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; raseedResult=null; page='home'; render(); renderNav(); };
 }
 
 el('btnEN').onclick = ()=> setLang('en');
@@ -1190,10 +1059,16 @@ document.addEventListener('keydown', e=>{
 // Direct link access for mobile (bookmark https://yoursite/#admin or #finance)
 if(location.hash === '#admin') page = 'admin';
 if(location.hash === '#finance') page = 'finance';
+if(location.hash === '#mycontrib') page = 'mycontrib';
+if(location.hash.startsWith('#mycontrib-')){
+  page = 'mycontrib';
+  mycontribCode = decodeURIComponent(location.hash.slice(11));
+}
 
 el('footNote').textContent = t().footNote;
 renderNav();
 loadAll();
+if(page==='mycontrib' && mycontribCode){ doMycontribSearch(mycontribCode); }
 </script>
 </body>
 </html>
