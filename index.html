@@ -345,6 +345,13 @@ let hKeyCount=0, hKeyTimer=null;
 const el = id => document.getElementById(id);
 const t = () => T[lang];
 
+function esc(v){
+  return String(v==null?'':v).replace(/[&<>"'`]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
+}
+// Notifications are built server-side and may contain only <b>..</b>; everything else is escaped.
+function escMsg(v){
+  return esc(v).replace(/&lt;b&gt;/g,'<b>').replace(/&lt;\/b&gt;/g,'</b>');
+}
 function showDebugError(msg){
   const b = el('debugBanner');
   b.textContent = 'Error details (please copy this to Claude): ' + msg;
@@ -484,11 +491,11 @@ function renderHome(){
       <p style="font-size:11.5px;color:var(--muted);margin:-8px 0 14px;">${t().prayerAutoNote}</p>
       <div class="card-grid">
         ${content.prayerTimes.map((p,i)=> editingPrayer===i ? `
-          <div class="prayer-card"><div class="pname">${p.name}</div>
-            <input id="prayerEditInput" value="${p.time}" style="margin-top:8px;text-align:center;color:#111;">
+          <div class="prayer-card"><div class="pname">${esc(p.name)}</div>
+            <input id="prayerEditInput" value="${esc(p.time)}" style="margin-top:8px;text-align:center;color:#111;">
             <button class="btn small" data-i="${i}" id="savePrayerBtn" style="margin-top:8px;">${t().save}</button>
           </div>` : `
-          <div class="prayer-card"><div class="pname">${p.name}</div><div class="ptime">${p.time}</div>
+          <div class="prayer-card"><div class="pname">${esc(p.name)}</div><div class="ptime">${esc(p.time)}</div>
             ${adminOK?`<button class="pedit" data-i="${i}" data-act="editPrayer">✎ ${t().save}</button>`:''}
           </div>`).join('')}
       </div>
@@ -496,7 +503,7 @@ function renderHome(){
     <div class="card">
       <h3>${t().announcements} ${adminOK?`<span class="edit-badge">${t().editMode}</span>`:''}</h3>
       ${content.announcements.length? content.announcements.map((a,i)=>`
-        <div class="announce-card" style="margin-bottom:10px;"><div class="ann-text">${a}</div>${adminOK?`<button class="ann-del" data-i="${i}" data-act="delAnn">✕</button>`:''}</div>`).join('') : `<div class="empty">—</div>`}
+        <div class="announce-card" style="margin-bottom:10px;"><div class="ann-text">${esc(a)}</div>${adminOK?`<button class="ann-del" data-i="${i}" data-act="delAnn">✕</button>`:''}</div>`).join('') : `<div class="empty">—</div>`}
       ${adminOK?`<form id="addAnnForm" novalidate style="margin-top:14px;"><label>${t().newAnnouncement}</label><input name="ann"><div id="addAnnErr" style="color:var(--bad);font-size:12px;margin-top:4px;"></div><button class="btn small" type="submit" style="margin-top:10px;">${t().add}</button></form>`:''}
     </div>
   </div>`;
@@ -512,7 +519,7 @@ function renderMadrissa(){
   <div class="card">
     <h3>${t().classesOffered} ${adminOK?`<span class="edit-badge">${t().editMode}</span>`:''}</h3>
     <div class="card-grid">
-      ${content.classes.map((c,i)=>`<div class="class-chip">${c}${adminOK?`<button class="cls-del" data-i="${i}" data-act="delClass">✕</button>`:''}</div>`).join('')}
+      ${content.classes.map((c,i)=>`<div class="class-chip">${esc(c)}${adminOK?`<button class="cls-del" data-i="${i}" data-act="delClass">✕</button>`:''}</div>`).join('')}
     </div>
     ${adminOK?`<form id="addClassForm" novalidate style="margin-top:16px;"><label>${t().newClass}</label><input name="cls"><div id="addClassErr" style="color:var(--bad);font-size:12px;margin-top:4px;"></div><button class="btn small" type="submit" style="margin-top:10px;">${t().add}</button></form>`:''}
   </div>
@@ -541,7 +548,7 @@ function renderMadrissa(){
       <div class="grid2">
         <div><label>${t().admissionDate}</label><input name="admDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
         <div><label>${t().classApplying}</label>
-          <select name="cls">${content.classes.map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+          <select name="cls">${content.classes.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
         </div>
       </div>
       <div class="grid2">
@@ -557,14 +564,14 @@ function renderMadrissa(){
   <div class="section-heading" style="margin-top:32px;">${t().pendingApps} (${admissions.length})</div>
   <div class="card">
     ${admissions.length? `<table><tr><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${admissions.map((a,i)=>`
-      <tr><td>${a.name}</td><td>${a.guardian||''}</td><td>${a.cls}</td><td>${a.contact}</td>
+      <tr><td>${esc(a.name)}</td><td>${esc(a.guardian||'')}</td><td>${esc(a.cls)}</td><td>${esc(a.contact)}</td>
       <td class="row-actions"><button data-i="${i}" class="enrollBtn">${t().enroll}</button><button data-i="${i}" class="rejectAppBtn">${t().rejectApp}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">—</div>`}
   </div>
   <div class="section-heading">${t().studentsList} (${students.length})</div>
   <div class="card">
     ${students.length? `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${students.map((s,i)=>`
-      <tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>${s.guardian||''}</td><td>${s.cls}</td><td>${s.contact||''}</td>
+      <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${esc(s.guardian||'')}</td><td>${esc(s.cls)}</td><td>${esc(s.contact||'')}</td>
       <td class="row-actions"><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">${t().noStudents}</div>`}
     <form id="addStudentForm" novalidate style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;">
@@ -594,9 +601,9 @@ function renderAttendanceForm(){
   const curDate = selectedAttDate || today;
   const curAtt = attendance[curDate] || {};
   return `
-    <div style="margin-bottom:14px;"><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${curDate}" max="${today}"></div>
+    <div style="margin-bottom:14px;"><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${esc(curDate)}" max="${esc(today)}"></div>
     <table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent}</th></tr>${students.map(s=>`
-    <tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>
+    <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>
       <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="present" ${curAtt[s.id]==='present'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().present}</label>
       &nbsp;&nbsp;
       <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="absent" ${curAtt[s.id]==='absent'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().absent}</label>
@@ -616,7 +623,7 @@ function renderMonthlyAttendance(){
     });
     const totalD = present+absent;
     const pct = totalD ? Math.round(present/totalD*100) : 0;
-    return `<tr><td class="roll">#${s.roll}</td><td>${s.name}</td><td>${present}</td><td>${absent}</td><td>${pct}%</td></tr>`;
+    return `<tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${present}</td><td>${absent}</td><td>${pct}%</td></tr>`;
   }).join('');
   return `
     <label>${t().selectMonth}</label>
@@ -663,7 +670,7 @@ function renderAdminPanel(){
   const mPct = mTotal ? Math.round(mPresent/mTotal*100) : 0;
   return `
   <h2 class="page-title">${t().adminTitle} <button class="btn secondary small" id="adminLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
-  <p class="page-sub">${t().loggedInAs}: <b>${adminUser}</b></p>
+  <p class="page-sub">${t().loggedInAs}: <b>${esc(adminUser)}</b></p>
   <div class="stat-row">
     <div class="stat"><div class="icon">${svgIcon('inbox')}</div><div class="num">${admissions.length}</div><div class="lbl">${t().dashPending}</div></div>
     <div class="stat"><div class="icon">${svgIcon('users')}</div><div class="num">${students.length}</div><div class="lbl">${t().dashStudents}</div></div>
@@ -727,17 +734,17 @@ function renderRaseedReceiptPrint(){
     </div>
     <h2 style="text-align:center;margin:6px 0 18px;color:var(--gold);border-bottom:2px solid var(--gold);padding-bottom:10px;">رسید</h2>
     <table style="width:100%;font-size:15px;">
-      <tr><td style="padding:10px 6px;color:var(--muted);width:40%;">سیریل نمبر:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${r.receipt_no}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.date}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.donor_name}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${r.category}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);width:40%;">سیریل نمبر:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${esc(r.receipt_no)}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.date)}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.donor_name)}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.category)}</td></tr>
       <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">Rs ${Number(r.amount).toLocaleString()}</td></tr>
       <tr><td colspan="2" style="padding-top:30px;text-align:left;color:var(--muted);">دستخط مہتمم: ______________________</td></tr>
     </table>
     <div style="margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:14px;">
       <div id="raseedQrBox"></div>
       <div style="font-size:12px;color:var(--muted);">
-        <div style="font-weight:700;color:var(--teal-900);font-size:13px;">${t().accessCodeLabel}: ${r.access_code}</div>
+        <div style="font-weight:700;color:var(--teal-900);font-size:13px;">${t().accessCodeLabel}: ${esc(r.access_code)}</div>
         <div style="margin-top:4px;">${t().accessCodeNote}</div>
         <div style="margin-top:6px;">${t().scanToCheck} — jamiahudabia.github.io</div>
       </div>
@@ -752,7 +759,7 @@ function renderMyContribution(){
     <h2>${t().mycontribTitle}</h2>
     <p>${t().mycontribSub}</p>
     <div class="search-box">
-      <input id="mycontribInput" placeholder="${t().codePlaceholder}" value="${mycontribCode||''}">
+      <input id="mycontribInput" placeholder="${t().codePlaceholder}" value="${esc(mycontribCode||'')}">
       <button class="btn" id="mycontribBtn" style="margin:0;">${t().search}</button>
     </div>
   </div>
@@ -769,14 +776,14 @@ function renderMycontribResultHTML(){
       <div class="stat"><div class="num">Rs ${total.toLocaleString()}</div><div class="lbl">${t().totalGiven}</div></div>
     </div>
     <div class="card">
-      <h3>${data[0].donor_name}</h3>
+      <h3>${esc(data[0].donor_name)}</h3>
       <p style="font-size:13px;color:var(--ok);"><b>${t().monthsGiven}:</b> ${monthsGiven.join(', ')}</p>
       ${missing.length ? `<p style="font-size:13px;color:var(--bad);"><b>${t().monthsMissing}:</b> ${missing.join(', ')}</p>` : ''}
     </div>
     <div class="card">
       <h3>${t().receiptHistoryTitle}</h3>
       <table><tr><th>${t().dateL}</th><th>${t().pageNo}</th><th>${t().category}</th><th>${t().amount}</th></tr>
-        ${data.map(r=>`<tr><td>${r.date}</td><td class="roll">#${r.receipt_no}</td><td>${r.category}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
+        ${data.map(r=>`<tr><td>${esc(r.date)}</td><td class="roll">#${esc(r.receipt_no)}</td><td>${esc(r.category)}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
       </table>
     </div>`;
 }
@@ -806,7 +813,7 @@ function renderBell(){
   el('bellDot').style.display = unread ? 'block' : 'none';
   const panel = el('bellPanel');
   panel.innerHTML = `<div class="bn-head"><span>${t().notifications}</span><button id="markReadBtn">${t().markAllRead}</button></div>` +
-    (notifications.length ? notifications.map(n=>`<div class="bn-item">${n.msg}<div class="bn-time">${new Date(n.time).toLocaleString()}</div></div>`).join('') : `<div class="bn-empty">${t().noNotifications}</div>`);
+    (notifications.length ? notifications.map(n=>`<div class="bn-item">${escMsg(n.msg)}<div class="bn-time">${new Date(n.time).toLocaleString()}</div></div>`).join('') : `<div class="bn-empty">${t().noNotifications}</div>`);
   const mrb = el('markReadBtn');
   if(mrb) mrb.onclick = async ()=>{
     notifications.forEach(n=>n.read=true); renderBell();
@@ -938,14 +945,14 @@ function bindEvents(){
         return `
         <div class="card">
           <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
-            <div class="avatar-circle">${initials}</div>
-            <div><h3 style="margin:0;">${match.name} <span class="roll">#${match.roll}</span></h3>
-            <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${match.cls}${match.guardian ? ' · ' + t().fatherGuardian + ': ' + match.guardian : ''}</p></div>
+            <div class="avatar-circle">${esc(initials)}</div>
+            <div><h3 style="margin:0;">${esc(match.name)} <span class="roll">#${esc(match.roll)}</span></h3>
+            <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${esc(match.cls)}${match.guardian ? ' · ' + t().fatherGuardian + ': ' + esc(match.guardian) : ''}</p></div>
           </div>
           <div>${t().attendancePct}: <b>${pct}%</b></div>
           <div class="progress-bar"><div style="width:${pct}%;"></div></div>
           <h3 style="margin-top:20px;">${t().attendanceHistory}</h3>
-          ${records.length? `<table><tr><th>${t().dateL}</th><th>${t().present}/${t().absent}</th></tr>${records.map(r=>`<tr><td>${r.date}</td><td><span class="pill ${r.status}">${t()[r.status]}</span></td></tr>`).join('')}</table>` : `<div class="empty">—</div>`}
+          ${records.length? `<table><tr><th>${t().dateL}</th><th>${t().present}/${t().absent}</th></tr>${records.map(r=>`<tr><td>${esc(r.date)}</td><td><span class="pill ${esc(r.status)}">${t()[r.status]}</span></td></tr>`).join('')}</table>` : `<div class="empty">—</div>`}
         </div>`;
       }).join('');
     }catch(e){ showDebugError(e.message || String(e)); }
