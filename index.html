@@ -230,7 +230,7 @@ en:{
   attendanceHistory:"Attendance Record",attendancePct:"Attendance",
   adminTitle:"Admin Login",adminSub:"Log in to manage prayer times, announcements, classes, and student records.",
   username:"Username",password:"Password",login:"Log In",logout:"Log Out",
-  setCredsNote:"No admin account set yet — create one now.",wrongCreds:"Incorrect username or password.",
+  setCredsNote:"No admin account set yet — create one now.",wrongCreds:"Incorrect username or password.",lockedMsg:"Too many wrong attempts. Please wait 15 to 30 minutes and try again.",
   resetAccount:"Forgot it? Reset admin account",resetConfirmClick:"Click again to confirm reset",
   loggedInAs:"Logged in as",
   financeTitle:"Finance Login",financeSub:"Restricted — only authorised users can enter.",
@@ -290,7 +290,7 @@ ur:{
   attendanceHistory:"حاضری کا ریکارڈ",attendancePct:"حاضری کی شرح",
   adminTitle:"ایڈمن لاگ ان",adminSub:"نماز کے اوقات، اعلانات، جماعتیں اور طلباء کا ریکارڈ منظم کرنے کے لیے لاگ ان کریں۔",
   username:"صارف نام",password:"پاس ورڈ",login:"لاگ ان",logout:"لاگ آؤٹ",
-  setCredsNote:"ابھی تک کوئی ایڈمن اکاؤنٹ نہیں — ابھی ایک بنائیں۔",wrongCreds:"غلط صارف نام یا پاس ورڈ۔",
+  setCredsNote:"ابھی تک کوئی ایڈمن اکاؤنٹ نہیں — ابھی ایک بنائیں۔",wrongCreds:"غلط صارف نام یا پاس ورڈ۔",lockedMsg:"بہت زیادہ غلط کوششیں ہو چکی ہیں۔ 15 سے 30 منٹ بعد دوبارہ کوشش کریں۔",
   resetAccount:"بھول گئے؟ ایڈمن اکاؤنٹ ری سیٹ کریں",resetConfirmClick:"تصدیق کے لیے دوبارہ کلک کریں",
   loggedInAs:"لاگ ان بطور",
   financeTitle:"مالیات لاگ ان",financeSub:"محدود رسائی — صرف مجاز صارفین داخل ہو سکتے ہیں۔",
@@ -794,6 +794,7 @@ function renderMyContribution(){
 function renderMycontribResultHTML(){
   if(mycontribResult === null) return '';
   if(mycontribResult === 'notfound') return `<div class="card"><div class="empty">${t().noCodeResult}</div></div>`;
+  if(mycontribResult === 'locked') return `<div class="card"><div class="empty">${t().lockedMsg}</div></div>`;
   const {data, total, paid, missing} = mycontribResult;
   return `
     <div class="card" style="text-align:center;">
@@ -848,7 +849,10 @@ async function doMycontribSearch(code){
     }
     mycontribResult = {data, total, paid, missing};
     render();
-  }catch(e){ showDebugError(e.message || String(e)); }
+  }catch(e){
+    if(String((e && e.message) || e).includes('locked')){ mycontribResult = 'locked'; render(); }
+    else showDebugError(e.message || String(e));
+  }
 }
 
 function renderBell(){
@@ -1031,7 +1035,10 @@ function bindEvents(){
           ${records.length? `<table><tr><th>${t().dateL}</th><th>${t().present}/${t().absent}</th></tr>${records.map(r=>`<tr><td>${esc(r.date)}</td><td><span class="pill ${esc(r.status)}">${t()[r.status]}</span></td></tr>`).join('')}</table>` : `<div class="empty">—</div>`}
         </div>`;
       }).join('');
-    }catch(e){ showDebugError(e.message || String(e)); }
+    }catch(e){
+      if(String((e && e.message) || e).includes('locked')){ box.innerHTML = `<div class="card"><div class="empty">${t().lockedMsg}</div></div>`; }
+      else showDebugError(e.message || String(e));
+    }
   };
 
   const adminLoginBtn = el('adminLoginBtn');
@@ -1049,7 +1056,7 @@ function bindEvents(){
       const {data, error} = await sb.rpc('verify_login', {p_username:u, p_password:p});
       if(error) throw error;
       if(data === 'admin'){ adminUser=u; adminPass=p; adminOK=true; await loadAdminData(); render(); }
-      else { el('adminErr').textContent = t().wrongCreds; }
+      else { el('adminErr').textContent = data === 'locked' ? t().lockedMsg : t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
   const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ adminOK=false; adminUser=null; adminPass=null; editingStudent=-1; page='home'; render(); renderNav(); };
@@ -1111,7 +1118,7 @@ function bindEvents(){
       const {data, error} = await sb.rpc('verify_login', {p_username:u, p_password:p});
       if(error) throw error;
       if(data === 'finance'){ financeUser=u; financePass=p; financeOK=true; render(); }
-      else { el('finErr').textContent = t().wrongCreds; }
+      else { el('finErr').textContent = data === 'locked' ? t().lockedMsg : t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
   const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; raseedResult=null; page='home'; render(); renderNav(); };
