@@ -156,6 +156,9 @@
     .card{padding:18px 18px;}
     .stat-row{flex-direction:column;}
   }
+  .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .mchip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .mchip.ok{background:var(--ok-bg);color:var(--ok);} .mchip.bad{background:var(--bad-bg);color:var(--bad);}
 </style>
 </head>
 <body>
@@ -212,7 +215,7 @@ en:{
   homeTitle:"Welcome",homeSub:"Prayer times, announcements, and community info.",
   heroEyebrow:"Assalamu Alaikum", heroLine:"A place of worship, learning, and community.",
   prayerTimes:"Prayer Times",announcements:"Announcements",editMode:"Editing enabled",
-  add:"Add",save:"Save",cancel:"Cancel",remove:"Remove",
+  add:"Add",save:"Save",cancel:"Cancel",editBtn:"Edit",editStudent:"Edit Student",rollTaken:"This roll number is already used by another student.",badPhone:"Enter a valid mobile number (at least 7 digits) or leave it empty.",contactHelp:"The last 3 digits of this number are the parents' code to check attendance (roll-last 3 digits). If you change the roll or number, tell the parents.",saveFailed:"Could not save. Check the details and try again.",forMonthL:"For Month",monthsPaidL:"Months Paid",monthsDueL:"Months Due",allClear:"All months are paid. JazakAllah Khair!",noMonthly:"No monthly chanda receipts yet.",receiptNoL:"Receipt",remove:"Remove",
   madrissaTitle:"Madrissa",madrissaSub:"Classes offered and admission form.",
   classesOffered:"Classes Offered",applyAdmission:"Apply for Admission",
   studentName:"Student Name",fatherGuardian:"Father / Guardian Name",age:"Age",
@@ -222,8 +225,8 @@ en:{
   pendingApps:"Admission Requests",enroll:"Enroll",rejectApp:"Remove",
   studentsList:"Enrolled Students",rollNo:"Roll No.",className:"Class",
   markAttendance:"Mark Today's Attendance",present:"Present",absent:"Absent",noStudents:"No students enrolled yet.",
-  checkTitle:"Check Attendance & Reports",checkSub:"Parents can search by student name or roll number — no login needed.",
-  searchPlaceholder:"Enter student name or roll number",search:"Search",noResult:"No matching student found.",
+  checkTitle:"Check Attendance & Reports",checkSub:"Enter the roll number and the last 3 digits of the parent's registered mobile number, like 1-757. No login needed.",
+  searchPlaceholder:"Roll no - last 3 digits (e.g. 1-757)",search:"Search",noResult:"No record found. Check the roll number and the last 3 digits of the registered mobile number.",
   attendanceHistory:"Attendance Record",attendancePct:"Attendance",
   adminTitle:"Admin Login",adminSub:"Log in to manage prayer times, announcements, classes, and student records.",
   username:"Username",password:"Password",login:"Log In",logout:"Log Out",
@@ -262,7 +265,7 @@ en:{
   accessCodeLabel:"Donor's Private Code", accessCodeNote:"Keep this code safe — it's the only way to check contribution history.",
   scanToCheck:"Scan to check your contribution", issueAnother:"Issue Another Receipt",
   mycontribTitle:"Check My Contribution", mycontribSub:"Enter your private code to see your giving history.",
-  codePlaceholder:"Enter your 6-digit code", totalReceipts:"Total Receipts", totalGiven:"Total Given",
+  codePlaceholder:"Enter your private code", totalReceipts:"Total Receipts", totalGiven:"Total Given",
   monthsGiven:"Months Given", monthsMissing:"Months Missing", noCodeResult:"No record found for this code.",
   receiptHistoryTitle:"Receipt History"
 },
@@ -272,7 +275,7 @@ ur:{
   homeTitle:"خوش آمدید",homeSub:"نماز کے اوقات، اعلانات اور کمیونٹی کی معلومات۔",
   heroEyebrow:"السلام علیکم", heroLine:"عبادت، تعلیم اور برادری کا مرکز۔",
   prayerTimes:"نماز کے اوقات",announcements:"اعلانات",editMode:"ترمیم فعال ہے",
-  add:"شامل کریں",save:"محفوظ کریں",cancel:"منسوخ",remove:"ہٹائیں",
+  add:"شامل کریں",save:"محفوظ کریں",cancel:"منسوخ",editBtn:"ترمیم",editStudent:"طالب علم کی ترمیم",rollTaken:"یہ رول نمبر کسی دوسرے طالب علم کے پاس ہے۔",badPhone:"درست موبائل نمبر درج کریں (کم از کم 7 ہندسے) یا خالی چھوڑ دیں۔",contactHelp:"اس نمبر کے آخری 3 ہندسے والدین کا حاضری چیک کرنے کا کوڈ ہیں (رول نمبر-آخری 3 ہندسے)۔ رول یا نمبر بدلیں تو والدین کو بتا دیں۔",saveFailed:"محفوظ نہیں ہو سکا۔ تفصیل چیک کر کے دوبارہ کوشش کریں۔",forMonthL:"مہینہ",monthsPaidL:"ادا شدہ مہینے",monthsDueL:"باقی مہینے",allClear:"تمام مہینے ادا ہیں۔ جزاک اللہ خیر!",noMonthly:"ابھی تک ماہانہ چندے کی کوئی رسید نہیں۔",receiptNoL:"رسید",remove:"ہٹائیں",
   madrissaTitle:"مدرسہ",madrissaSub:"دستیاب جماعتیں اور داخلہ فارم۔",
   classesOffered:"دستیاب جماعتیں",applyAdmission:"داخلہ فارم",
   studentName:"طالب علم کا نام",fatherGuardian:"والد / سرپرست کا نام",age:"عمر",
@@ -282,8 +285,8 @@ ur:{
   pendingApps:"داخلہ درخواستیں",enroll:"داخلہ دیں",rejectApp:"حذف کریں",
   studentsList:"زیر تعلیم طلباء",rollNo:"رول نمبر",className:"جماعت",
   markAttendance:"آج کی حاضری لگائیں",present:"حاضر",absent:"غیر حاضر",noStudents:"ابھی تک کوئی طالب علم شامل نہیں۔",
-  checkTitle:"حاضری اور رپورٹ چیک کریں",checkSub:"والدین نام یا رول نمبر سے تلاش کر سکتے ہیں — لاگ ان کی ضرورت نہیں۔",
-  searchPlaceholder:"طالب علم کا نام یا رول نمبر درج کریں",search:"تلاش کریں",noResult:"کوئی طالب علم نہیں ملا۔",
+  checkTitle:"حاضری اور رپورٹ چیک کریں",checkSub:"رول نمبر اور والدین کے رجسٹرڈ موبائل نمبر کے آخری 3 ہندسے لکھیں، مثلاً 1-757۔ لاگ ان کی ضرورت نہیں۔",
+  searchPlaceholder:"رول نمبر - آخری 3 ہندسے (مثلاً 1-757)",search:"تلاش کریں",noResult:"کوئی ریکارڈ نہیں ملا۔ رول نمبر اور رجسٹرڈ موبائل نمبر کے آخری 3 ہندسے چیک کریں۔",
   attendanceHistory:"حاضری کا ریکارڈ",attendancePct:"حاضری کی شرح",
   adminTitle:"ایڈمن لاگ ان",adminSub:"نماز کے اوقات، اعلانات، جماعتیں اور طلباء کا ریکارڈ منظم کرنے کے لیے لاگ ان کریں۔",
   username:"صارف نام",password:"پاس ورڈ",login:"لاگ ان",logout:"لاگ آؤٹ",
@@ -321,7 +324,7 @@ ur:{
   accessCodeLabel:"عطیہ دہندہ کا ذاتی کوڈ", accessCodeNote:"یہ کوڈ محفوظ رکھیں — یہی عطیات کی تاریخ چیک کرنے کا واحد طریقہ ہے۔",
   scanToCheck:"اپنا عطیہ چیک کرنے کے لیے اسکین کریں", issueAnother:"ایک اور رسید جاری کریں",
   mycontribTitle:"میرا عطیہ چیک کریں", mycontribSub:"اپنی عطیات کی تاریخ دیکھنے کے لیے اپنا ذاتی کوڈ درج کریں۔",
-  codePlaceholder:"اپنا 6 ہندسوں کا کوڈ درج کریں", totalReceipts:"کل رسیدیں", totalGiven:"کل عطیہ",
+  codePlaceholder:"اپنا ذاتی کوڈ درج کریں", totalReceipts:"کل رسیدیں", totalGiven:"کل عطیہ",
   monthsGiven:"ادا شدہ مہینے", monthsMissing:"باقی مہینے", noCodeResult:"اس کوڈ کے لیے کوئی ریکارڈ نہیں ملا۔",
   receiptHistoryTitle:"رسیدوں کی تاریخ"
 }};
@@ -338,7 +341,7 @@ let adminOK=false, financeOK=false;
 let adminUser=null, adminPass=null, financeUser=null, financePass=null, adminSetupNeeded=false;
 let content={prayerTimes:[{name:"Fajr",time:"5:10 AM"},{name:"Dhuhr",time:"1:15 PM"},{name:"Asr",time:"5:00 PM"},{name:"Maghrib",time:"6:45 PM"},{name:"Isha",time:"8:15 PM"},{name:"Jummah",time:"2:10 PM"}],announcements:["Weekly Quran class every Friday after Asr."],classes:["Hifz","Nazira","Qaida","Islamiyat"]};
 let admissions=[], students=[], attendance={}, finance=[], notifications=[];
-let bellOpen=false, editingPrayer=-1, selectedReportMonth=null, mobileOpen=false, mycontribCode='';
+let bellOpen=false, editingPrayer=-1, editingStudent=-1, selectedReportMonth=null, mobileOpen=false, mycontribCode='';
 let raseedResult=null, mycontribResult=null;
 let hKeyCount=0, hKeyTimer=null;
 
@@ -572,8 +575,30 @@ function renderMadrissa(){
   <div class="card">
     ${students.length? `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${students.map((s,i)=>`
       <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${esc(s.guardian||'')}</td><td>${esc(s.cls)}</td><td>${esc(s.contact||'')}</td>
-      <td class="row-actions"><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
+      <td class="row-actions"><button data-i="${i}" class="editStudent">${t().editBtn}</button><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">${t().noStudents}</div>`}
+    ${(editingStudent>=0 && students[editingStudent]) ? `
+    <form id="editStudentForm" novalidate style="margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px;">
+      <div class="section-heading" style="margin-top:0;">${t().editStudent}</div>
+      <div class="grid2">
+        <div><label>${t().rollNo}</label><input name="roll" type="number" min="1" inputmode="numeric" value="${esc(students[editingStudent].roll)}"></div>
+        <div><label>${t().studentName}</label><input name="name" value="${esc(students[editingStudent].name)}"></div>
+      </div>
+      <div class="grid2">
+        <div><label>${t().className}</label><input name="cls" value="${esc(students[editingStudent].cls)}"></div>
+        <div><label>${t().fatherGuardian}</label><input name="guardian" value="${esc(students[editingStudent].guardian||'')}"></div>
+      </div>
+      <div class="grid2">
+        <div><label>${t().contact}</label><input name="contact" inputmode="tel" value="${esc(students[editingStudent].contact||'')}"></div>
+        <div></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0;">${t().contactHelp}</p>
+      <div id="editStudentErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn small" type="submit" style="margin:0;">${t().save}</button>
+        <button class="btn secondary small" type="button" id="cancelEditStudent" style="margin:0;">${t().cancel}</button>
+      </div>
+    </form>` : ''}
     <form id="addStudentForm" novalidate style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px;">
       <div class="section-heading" style="margin-top:0;">${t().addStudentManual}</div>
       <div class="grid2">
@@ -769,40 +794,59 @@ function renderMyContribution(){
 function renderMycontribResultHTML(){
   if(mycontribResult === null) return '';
   if(mycontribResult === 'notfound') return `<div class="card"><div class="empty">${t().noCodeResult}</div></div>`;
-  const {data, total, monthsGiven, missing} = mycontribResult;
+  const {data, total, paid, missing} = mycontribResult;
   return `
+    <div class="card" style="text-align:center;">
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">${t().mycontribTitle}</div>
+      <h3 style="margin:6px 0 0;font-size:24px;">${esc(data[0].donor_name)}</h3>
+    </div>
     <div class="stat-row">
-      <div class="stat"><div class="num">${data.length}</div><div class="lbl">${t().totalReceipts}</div></div>
       <div class="stat"><div class="num">Rs ${total.toLocaleString()}</div><div class="lbl">${t().totalGiven}</div></div>
+      <div class="stat"><div class="num">${data.length}</div><div class="lbl">${t().totalReceipts}</div></div>
+      ${paid.length ? `<div class="stat"><div class="num">${paid.length}</div><div class="lbl">${t().monthsPaidL}</div></div>` : ''}
     </div>
     <div class="card">
-      <h3>${esc(data[0].donor_name)}</h3>
-      <p style="font-size:13px;color:var(--ok);"><b>${t().monthsGiven}:</b> ${monthsGiven.join(', ')}</p>
-      ${missing.length ? `<p style="font-size:13px;color:var(--bad);"><b>${t().monthsMissing}:</b> ${missing.join(', ')}</p>` : ''}
+      ${paid.length ? `
+        <p style="font-size:13px;color:var(--ok);margin:0;"><b>${t().monthsGiven} (${paid.length})</b></p>
+        <div class="mchips">${paid.map(m=>`<span class="mchip ok">${esc(fmtMonth(m))}</span>`).join('')}</div>
+        ${missing.length ? `<p style="font-size:13px;color:var(--bad);margin:16px 0 0;"><b>${t().monthsMissing} (${missing.length})</b></p>
+          <div class="mchips">${missing.map(m=>`<span class="mchip bad">${esc(fmtMonth(m))}</span>`).join('')}</div>`
+          : `<p style="font-size:13.5px;color:var(--ok);margin:16px 0 0;">${t().allClear}</p>`}`
+        : `<div class="empty">${t().noMonthly}</div>`}
     </div>
     <div class="card">
       <h3>${t().receiptHistoryTitle}</h3>
-      <table><tr><th>${t().dateL}</th><th>${t().pageNo}</th><th>${t().category}</th><th>${t().amount}</th></tr>
-        ${data.map(r=>`<tr><td>${esc(r.date)}</td><td class="roll">#${esc(r.receipt_no)}</td><td>${esc(r.category)}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
-      </table>
+      <div style="overflow-x:auto;"><table><tr><th>${t().receiptNoL}</th><th>${t().dateL}</th><th>${t().category}</th><th>${t().forMonthL}</th><th>${t().amount}</th></tr>
+        ${data.slice().reverse().map(r=>`<tr><td class="roll">#${esc(r.receipt_no)}</td><td>${esc(r.date)}</td><td>${esc(r.category)}</td><td>${r.for_month?esc(fmtMonth(r.for_month)):'—'}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
+      </table></div>
     </div>`;
+}
+
+const MONTHS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_UR=['جنوری','فروری','مارچ','اپریل','مئی','جون','جولائی','اگست','ستمبر','اکتوبر','نومبر','دسمبر'];
+function fmtMonth(m){ const y=m.slice(0,4), mm=Number(m.slice(5,7)); return (lang==='ur'?MONTHS_UR:MONTHS_EN)[mm-1]+' '+y; }
+function monthRangeList(first,last){
+  const out=[]; let y=Number(first.slice(0,4)), m=Number(first.slice(5,7));
+  const ly=Number(last.slice(0,4)), lm=Number(last.slice(5,7));
+  while((y<ly || (y===ly && m<=lm)) && out.length<240){ out.push(y+'-'+String(m).padStart(2,'0')); m++; if(m>12){ m=1; y++; } }
+  return out;
 }
 
 async function doMycontribSearch(code){
   if(!code) return;
   try{
-    const {data, error} = await sb.rpc('get_donor_contributions', {p_code:code});
+    const {data, error} = await sb.rpc('get_donor_contributions_v2', {p_code:code});
     if(error) throw error;
     if(!data || !data.length){ mycontribResult = 'notfound'; render(); return; }
     const total = data.reduce((s,r)=>s+Number(r.amount),0);
-    const monthsGivenArr = [...new Set(data.map(r=>r.date.slice(0,7)))].sort();
-    const firstMonth = monthsGivenArr[0];
-    const allMonths = [];
-    let cur = new Date(firstMonth+'-01');
-    const now = new Date();
-    while(cur <= now){ allMonths.push(cur.toISOString().slice(0,7)); cur.setMonth(cur.getMonth()+1); }
-    const missing = allMonths.filter(m=>!monthsGivenArr.includes(m));
-    mycontribResult = {data, total, monthsGiven: monthsGivenArr, missing};
+    const paid = [...new Set(data.filter(r=>r.for_month).map(r=>r.for_month))].sort();
+    let missing = [];
+    if(paid.length){
+      const nowM = todayInPakistan().slice(0,7);
+      const lastM = paid[paid.length-1] > nowM ? paid[paid.length-1] : nowM;
+      missing = monthRangeList(paid[0], lastM).filter(m=>!paid.includes(m));
+    }
+    mycontribResult = {data, total, paid, missing};
     render();
   }catch(e){ showDebugError(e.message || String(e)); }
 }
@@ -891,12 +935,44 @@ function bindEvents(){
       admissions.splice(i,1); render();
     }catch(e){ showDebugError(e.message || String(e)); }
   });
+  document.querySelectorAll('.editStudent').forEach(b=> b.onclick = ()=>{
+    editingStudent = Number(b.dataset.i); render();
+    const ef = el('editStudentForm'); if(ef) ef.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  const cancelEditStudent = el('cancelEditStudent');
+  if(cancelEditStudent) cancelEditStudent.onclick = ()=>{ editingStudent=-1; render(); };
+  const editStudentForm = el('editStudentForm');
+  if(editStudentForm) editStudentForm.onsubmit = async e=>{
+    e.preventDefault();
+    const s = students[editingStudent]; const errBox = el('editStudentErr');
+    if(!s) return;
+    const f = new FormData(editStudentForm);
+    const roll = parseInt(String(f.get('roll')).trim(), 10);
+    const name = String(f.get('name')).trim(), cls = String(f.get('cls')).trim();
+    const guardian = String(f.get('guardian')).trim(), contact = String(f.get('contact')).trim();
+    if(!roll || roll < 1 || !name || !cls){ errBox.textContent = t().fillRequired; return; }
+    if(contact && contact.replace(/\D/g,'').length < 7){ errBox.textContent = t().badPhone; return; }
+    try{
+      const {data, error} = await sb.rpc('update_student', {p_username:adminUser, p_password:adminPass, p_id:s.id, p_roll:roll, p_name:name, p_cls:cls, p_guardian:guardian, p_contact:contact});
+      if(error) throw error;
+      students[editingStudent] = {id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact};
+      students.sort((a,b)=> a.roll-b.roll);
+      editingStudent = -1; render();
+    }catch(err){
+      const msg = String((err && err.message) || err);
+      if(msg.includes('roll_taken')) errBox.textContent = t().rollTaken;
+      else if(msg.includes('invalid_contact')) errBox.textContent = t().badPhone;
+      else if(msg.includes('invalid_input') || msg.includes('invalid_roll')) errBox.textContent = t().fillRequired;
+      else { errBox.textContent = t().saveFailed; showDebugError(msg); }
+    }
+  };
   document.querySelectorAll('.delStudent').forEach(b=> b.onclick = async ()=>{
     const i=Number(b.dataset.i); const s=students[i];
+    if(!confirm(t().delete + ': ' + s.name + ' ?')) return;
     try{
       const {error} = await sb.rpc('delete_student', {p_username:adminUser, p_password:adminPass, p_id:s.id});
       if(error) throw error;
-      students.splice(i,1); render();
+      students.splice(i,1); editingStudent=-1; render();
     }catch(e){ showDebugError(e.message || String(e)); }
   });
   const addStudentForm = el('addStudentForm');
@@ -976,7 +1052,7 @@ function bindEvents(){
       else { el('adminErr').textContent = t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
-  const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ adminOK=false; adminUser=null; adminPass=null; page='home'; render(); renderNav(); };
+  const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ adminOK=false; adminUser=null; adminPass=null; editingStudent=-1; page='home'; render(); renderNav(); };
   const resetAdminBtn = el('resetAdminBtn');
   if(resetAdminBtn) resetAdminBtn.onclick = async ()=>{
     if(resetAdminBtn.dataset.armed==='1'){
