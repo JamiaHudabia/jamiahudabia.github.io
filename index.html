@@ -159,6 +159,38 @@
   .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .mchip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap;}
   .mchip.ok{background:var(--ok-bg);color:var(--ok);} .mchip.bad{background:var(--bad-bg);color:var(--bad);}
+  .pill.leave{background:#FBF1D4;color:#8A6410;}
+  .guard{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px;}
+  .att-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;}
+  .att-toolbar > div{min-width:170px;}
+  .rchip{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:700;margin-inline-start:4px;}
+  .rchip.bad{background:var(--bad-bg);color:var(--bad);} .rchip.warn{background:#FBF1D4;color:#8A6410;} .rchip.ok{background:var(--ok-bg);color:var(--ok);}
+  .rcard{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;background:#fff;}
+  .rhead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:6px;font-size:14px;}
+  .rsec{padding:6px 0;border-top:1px dotted var(--line);font-size:13.5px;line-height:1.9;}
+  .rmeta{padding-top:6px;border-top:1px dotted var(--line);font-size:13px;color:var(--muted);}
+  .rnote{margin-top:6px;padding:8px 10px;background:var(--gold-soft);border-radius:8px;font-size:13px;}
+  .dr-grid{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1280px;}
+  .dr-grid th,.dr-grid td{border:1px solid var(--line);padding:4px;text-align:center;vertical-align:middle;}
+  .dr-grid thead th{background:var(--teal-900);color:var(--gold-light);font-weight:600;padding:6px 4px;}
+  .dr-grid thead tr.grp th{background:var(--teal-800);}
+  .dr-grid input,.dr-grid select{width:100%;min-width:56px;padding:6px 5px;font-size:12.5px;border:1px solid var(--line);border-radius:6px;background:#fff;}
+  .dr-grid td.nm{text-align:start;min-width:130px;font-weight:600;}
+  .dr-actions a,.dr-actions button.drWa{all:unset;cursor:pointer;display:inline-block;padding:5px 10px;border-radius:8px;border:1px solid var(--ok);color:var(--ok);font-size:12px;font-weight:700;white-space:nowrap;}
+  .dr-actions button.drWa.sent{background:var(--ok);color:#fff;}
+  .dr-actions button.drWa[disabled]{opacity:.45;cursor:not-allowed;border-color:var(--line);color:var(--muted);}
+  .dr-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+  .dr-msg{font-size:13.5px;margin:10px 0;min-height:1.2em;} .dr-msg.ok{color:var(--ok);} .dr-msg.err{color:var(--bad);}
+  .tablewrap{overflow-x:auto;}
+  @media (max-width:900px){
+    .dr-grid{min-width:0;} .dr-grid thead{display:none;}
+    .dr-grid,.dr-grid tbody,.dr-grid tr,.dr-grid td{display:block;width:100%;}
+    .dr-grid tr{border:1px solid var(--line);border-radius:12px;margin-bottom:14px;padding:8px;background:#fff;}
+    .dr-grid td{border:none;display:flex;gap:8px;align-items:center;justify-content:space-between;text-align:start;padding:4px 2px;}
+    .dr-grid td::before{content:attr(data-label);flex:0 0 42%;font-size:12px;color:var(--muted);}
+    .dr-grid td.nm{font-size:15px;} .dr-grid td.nm::before,.dr-grid td.sn::before{display:none;}
+    .dr-grid input,.dr-grid select{flex:1;}
+  }
 </style>
 </head>
 <body>
@@ -210,7 +242,7 @@ const ICONS = {
 
 const T = {
 en:{
-  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance",mycontrib:"My Contribution"},
+  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance",mycontrib:"My Contribution",reports:"Daily Report"},leave:"Leave",presentAll:"Present All",daysLeave:"Leave",allClasses:"All classes",classFilterL:"Class",presentAllConfirm:"Mark {n} students Present? Existing Absent/Leave marks in this list will be overwritten.",
   footNote:"Jamia Masjid Hudabia & Jamia Hudabia Taleem Al Quran · Contact: 03225600912",
   homeTitle:"Welcome",homeSub:"Prayer times, announcements, and community info.",
   heroEyebrow:"Assalamu Alaikum", heroLine:"A place of worship, learning, and community.",
@@ -270,7 +302,7 @@ en:{
   receiptHistoryTitle:"Receipt History"
 },
 ur:{
-  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں",mycontrib:"میرا عطیہ"},
+  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں",mycontrib:"میرا عطیہ",reports:"روزانہ رپورٹ"},leave:"چھٹی",presentAll:"سب حاضر",daysLeave:"چھٹی",allClasses:"تمام کلاسیں",classFilterL:"کلاس",presentAllConfirm:"{n} طلبہ کو حاضر لگائیں؟ اس فہرست میں پہلے سے لگی غیر حاضری/چھٹی بدل جائے گی۔",
   footNote:"جامع مسجد حدیبیہ اور جامعہ حدیبیہ تعلیم القرآن · رابطہ: 03225600912",
   homeTitle:"خوش آمدید",homeSub:"نماز کے اوقات، اعلانات اور کمیونٹی کی معلومات۔",
   heroEyebrow:"السلام علیکم", heroLine:"عبادت، تعلیم اور برادری کا مرکز۔",
@@ -455,7 +487,7 @@ function setLang(l){
 }
 
 function renderNav(){
-  const items=[['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa'],['check',t().nav.check,'check'],['mycontrib',t().nav.mycontrib,'mycontrib']];
+  const items=[['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa']].concat(adminOK?[['reports',t().nav.reports,'reports']]:[]).concat([['check',t().nav.check,'check'],['mycontrib',t().nav.mycontrib,'mycontrib']]);
   el('navList').innerHTML = items.map(([id,label,icon])=>`<button data-p="${id}" class="${page===id?'active':''}">${label}</button>`).join('');
   [...el('navList').children].forEach(b=> b.onclick=()=>{ page=b.dataset.p; render(); renderNav(); });
   el('mobileDrawerPanel').innerHTML = items.map(([id,label])=>`<button data-p="${id}" class="navitem ${page===id?'active':''}">${label}</button>`).join('');
@@ -472,9 +504,11 @@ function render(){
   if(page==='madrissa') root.innerHTML = renderMadrissa();
   if(page==='check') root.innerHTML = renderCheck();
   if(page==='admin') root.innerHTML = adminOK ? renderAdminPanel() : renderAdminLogin();
+  if(page==='reports') root.innerHTML = adminOK ? renderReports() : renderAdminLogin();
   if(page==='finance') root.innerHTML = financeOK ? renderFinance() : renderFinanceLogin();
   if(page==='mycontrib') root.innerHTML = renderMyContribution();
   bindEvents();
+  if(page==='reports' && adminOK) bindReportEvents();
   renderBell();
 }
 
@@ -549,7 +583,7 @@ function renderMadrissa(){
       <label>${t().residence}</label><textarea name="residence"></textarea>
       <div class="section-heading">${t().secDocsClass}</div>
       <div class="grid2">
-        <div><label>${t().admissionDate}</label><input name="admDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label>${t().admissionDate}</label><input name="admDate" type="date" value="${todayInPakistan()}"></div>
         <div><label>${t().classApplying}</label>
           <select name="cls">${content.classes.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
         </div>
@@ -620,40 +654,95 @@ function renderMadrissa(){
   `;
 }
 
-let selectedAttDate = null;
+
+const DR_L={
+ en:{title:"Daily Report",sub:"Fill the register online, save, then send each parent a WhatsApp message.",
+  date:"Date",cls:"Class",teacher:"Teacher (Qari Sahab)",all:"All classes",sabaq:"Sabaq",sabqi:"Sabqi",manzil:"Manzil",
+  detail:"How much / Para",detailSabaq:"How much",listener:"Heard by",mistakes:"Mistakes",atkan:"Atkan",
+  attendance:"Attendance",time1:"1st time",time2:"2nd time",uniform:"Uniform",note:"Note",roll:"Roll",name:"Name",
+  present:"Present",late:"Late",absent:"Absent",leave:"Leave",complete:"Complete",incomplete:"Incomplete",choose:"—",
+  save:"Save Report",saving:"Saving…",saved:"Saved: {n} report(s).",loading:"Loading…",noStudents:"No students in this class.",
+  wa:"WhatsApp",noNumber:"No number",sent:"Sent ✓",tapSend:"Send to parent",
+  reportsTitle:"Daily Reports",noReports:"No daily reports yet.",teacherShort:"Teacher",
+  failed:"Could not save. Check the entries and try again.",locked:"Session locked. Try again later.",
+  msgHello:"Assalam o Alaikum!",msgReportOf:"daily report",msgView:"See all reports online",msgCode:"Code",
+  msgBlank:"—"},
+ ur:{title:"روزانہ رپورٹ",sub:"رجسٹر آن لائن بھریں، محفوظ کریں، پھر ہر والد کو واٹس ایپ پر رپورٹ بھیجیں۔",
+  date:"تاریخ",cls:"کلاس",teacher:"قاری صاحب",all:"تمام کلاسیں",sabaq:"سبق",sabqi:"سبقی",manzil:"منزل",
+  detail:"کتنا / پارہ",detailSabaq:"کتنا سبق",listener:"کس کو سنایا",mistakes:"غلطی",atkan:"اٹکن",
+  attendance:"حاضری",time1:"پہلا وقت",time2:"دوسرا وقت",uniform:"یونیفارم",note:"نوٹ",roll:"رول",name:"نام",
+  present:"حاضر",late:"تاخیر",absent:"غیر حاضر",leave:"چھٹی",complete:"مکمل",incomplete:"نامکمل",choose:"—",
+  save:"رپورٹ محفوظ کریں",saving:"محفوظ ہو رہی ہے…",saved:"محفوظ: {n} رپورٹ۔",loading:"لوڈ ہو رہا ہے…",noStudents:"اس کلاس میں کوئی طالب علم نہیں۔",
+  wa:"واٹس ایپ",noNumber:"نمبر نہیں",sent:"بھیج دی ✓",tapSend:"والد کو بھیجیں",
+  reportsTitle:"روزانہ رپورٹس",noReports:"ابھی تک کوئی روزانہ رپورٹ نہیں۔",teacherShort:"قاری صاحب",
+  failed:"محفوظ نہیں ہو سکی۔ اندراجات چیک کر کے دوبارہ کوشش کریں۔",locked:"سیشن لاک ہے۔ بعد میں کوشش کریں۔",
+  msgHello:"السلام علیکم!",msgReportOf:"کی روزانہ رپورٹ",msgView:"تمام رپورٹس آن لائن دیکھیں",msgCode:"کوڈ",
+  msgBlank:"—"}
+};
+function DR(){ return DR_L[lang]||DR_L.en; }
+function timeLbl(v){ const L=DR(); return v ? (L[v]||esc(v)) : '—'; }
+function uniLbl(v){ const L=DR(); return v ? (L[v]||esc(v)) : '—'; }
+function numOrNull(v){ const x=parseInt(String(v).trim(),10); return Number.isFinite(x)&&x>=0 ? x : null; }
+
+function reportSecHTML(label, detail, listener, m, a){
+  const L=DR();
+  if(!detail && !listener && m==null && a==null) return '';
+  return `<div class="rsec"><b>${label}</b> ${esc(detail||'—')}${listener?` · ${L.listener}: ${esc(listener)}`:''}
+    <span class="rchip bad">${L.mistakes}: ${m==null?0:esc(m)}</span><span class="rchip warn">${L.atkan}: ${a==null?0:esc(a)}</span></div>`;
+}
+function reportCardsHTML(reports){
+  const L=DR();
+  if(!reports || !reports.length) return `<div class="empty">${L.noReports}</div>`;
+  return reports.map(rp=>`
+    <div class="rcard">
+      <div class="rhead"><b>${esc(rp.report_date)}</b>${rp.teacher?`<span style="color:var(--muted);">${L.teacherShort}: ${esc(rp.teacher)}</span>`:''}</div>
+      ${reportSecHTML(L.sabaq, rp.sabaq_detail, rp.sabaq_listener, rp.sabaq_mistakes, rp.sabaq_atkan)}
+      ${reportSecHTML(L.sabqi, rp.sabqi_detail, rp.sabqi_listener, rp.sabqi_mistakes, rp.sabqi_atkan)}
+      ${reportSecHTML(L.manzil, rp.manzil_detail, rp.manzil_listener, rp.manzil_mistakes, rp.manzil_atkan)}
+      ${(rp.time1||rp.time2||rp.uniform)?`<div class="rmeta">${L.attendance}: ${timeLbl(rp.time1)} / ${timeLbl(rp.time2)} · ${L.uniform}: ${uniLbl(rp.uniform)}</div>`:''}
+      ${rp.note?`<div class="rnote">${esc(rp.note)}</div>`:''}
+    </div>`).join('');
+}
+let selectedAttDate = null, attClass = '';
 function renderAttendanceForm(){
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayInPakistan();
   const curDate = selectedAttDate || today;
   const curAtt = attendance[curDate] || {};
+  const classes = [...new Set(students.map(s=>s.cls))].sort();
+  const list = students.filter(s=> !attClass || s.cls===attClass);
+  const radio = (s,v)=>`<label style="display:inline;margin:0;font-weight:400;white-space:nowrap;"><input type="radio" name="att-${esc(s.id)}" value="${v}" ${curAtt[s.id]===v?'checked':''} class="attRadio" data-sid="${esc(s.id)}" style="width:auto;"> ${t()[v]}</label>`;
   return `
-    <div style="margin-bottom:14px;"><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${esc(curDate)}" max="${esc(today)}"></div>
-    <table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent}</th></tr>${students.map(s=>`
-    <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>
-      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="present" ${curAtt[s.id]==='present'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().present}</label>
-      &nbsp;&nbsp;
-      <label style="display:inline;margin:0;font-weight:400;"><input type="radio" name="att-${s.id}" value="absent" ${curAtt[s.id]==='absent'?'checked':''} class="attRadio" data-sid="${s.id}" style="width:auto;"> ${t().absent}</label>
-    </td></tr>`).join('')}</table>`;
+    <div class="att-toolbar">
+      <div><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${esc(curDate)}" max="${esc(today)}"></div>
+      <div><label>${t().classFilterL}</label><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+      <div><button class="btn small" id="presentAllBtn" style="margin:0;">${t().presentAll} (${list.length})</button></div>
+    </div>
+    <div class="tablewrap"><table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent} / ${t().leave}</th></tr>${list.map(s=>`
+    <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td><td>
+      ${radio(s,'present')}&nbsp;&nbsp;${radio(s,'absent')}&nbsp;&nbsp;${radio(s,'leave')}
+    </td></tr>`).join('')}</table></div>`;
 }
 
 function renderMonthlyAttendance(){
   const allMonths = [...new Set(Object.keys(attendance).map(d=>d.slice(0,7)))].sort().reverse();
-  const curMonth = selectedReportMonth || allMonths[0] || new Date().toISOString().slice(0,7);
+  const curMonth = selectedReportMonth || allMonths[0] || todayInPakistan().slice(0,7);
   const opts = allMonths.length ? allMonths : [curMonth];
   const rows = students.map(s=>{
-    let present=0, absent=0;
+    let present=0, absent=0, leave=0;
     Object.keys(attendance).forEach(d=>{
       if(d.slice(0,7)===curMonth && attendance[d][s.id]){
-        if(attendance[d][s.id]==='present') present++; else absent++;
+        const v=attendance[d][s.id];
+        if(v==='present') present++; else if(v==='leave') leave++; else absent++;
       }
     });
     const totalD = present+absent;
     const pct = totalD ? Math.round(present/totalD*100) : 0;
-    return `<tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${present}</td><td>${absent}</td><td>${pct}%</td></tr>`;
+    return `<tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td><td>${present}</td><td>${absent}</td><td>${leave}</td><td>${pct}%</td></tr>`;
   }).join('');
   return `
     <label>${t().selectMonth}</label>
     <select id="monthSelect">${opts.map(m=>`<option value="${m}" ${m===curMonth?'selected':''}>${m}</option>`).join('')}</select>
-    <table style="margin-top:14px;"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().daysPresent}</th><th>${t().daysAbsent}</th><th>${t().attRate}</th></tr>${rows}</table>`;
+    <div class="tablewrap"><table style="margin-top:14px;"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().daysPresent}</th><th>${t().daysAbsent}</th><th>${t().daysLeave}</th><th>${t().attRate}</th></tr>${rows}</table></div>`;
 }
 
 function renderCheck(){
@@ -668,6 +757,161 @@ function renderCheck(){
   </div>
   <div id="checkResult"></div>`;
 }
+
+
+// ===================== DAILY REPORT (admin) =====================
+let reportDate = null, reportClass = '', reportTeacher = null, reportsByDate = {}, reportsLoadedKey = null, reportsLoading = false, reportMsg = {text:'',cls:''};
+function lsGet(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+async function loadReports(date){
+  if(reportsLoading) return;
+  reportsLoading = true; reportsLoadedKey = date;
+  try{
+    const {data, error} = await sb.rpc('get_daily_reports', {p_username:adminUser, p_password:adminPass, p_date:date});
+    if(error) throw error;
+    const map = {}; (data||[]).forEach(r=>{ map[r.student_id] = r; });
+    reportsByDate[date] = map;
+    if(reportTeacher===null){
+      const first = (data||[]).find(r=>r.teacher);
+      reportTeacher = first ? first.teacher : lsGet('hud_teacher');
+    }
+  }catch(e){ showDebugError(e.message || String(e)); }   // keep reportsLoadedKey set so a failing load is not retried in a loop
+  reportsLoading = false;
+  if(page==='reports') render();
+}
+
+function renderReports(){
+  const L = DR();
+  const date = reportDate || todayInPakistan();
+  if(reportsLoadedKey !== date && !reportsLoading) loadReports(date);
+  const classes = [...new Set(students.map(s=>s.cls))].sort();
+  const list = students.filter(s=> !reportClass || s.cls===reportClass);
+  const saved = reportsByDate[date] || {};
+  const teacher = reportTeacher===null ? lsGet('hud_teacher') : reportTeacher;
+  const sel = (sid,f,val,opts)=>`<select data-sid="${esc(sid)}" data-f="${f}"><option value="">${L.choose}</option>${opts.map(o=>`<option value="${o}" ${val===o?'selected':''}>${L[o]}</option>`).join('')}</select>`;
+  const txt = (sid,f,val,lbl)=>`<input data-sid="${esc(sid)}" data-f="${f}" value="${esc(val||'')}" maxlength="100" aria-label="${esc(lbl)}">`;
+  const num = (sid,f,val,lbl)=>`<input data-sid="${esc(sid)}" data-f="${f}" type="number" min="0" max="999" inputmode="numeric" value="${val==null?'':esc(val)}" aria-label="${esc(lbl)}">`;
+  const T4 = ['present','late','absent','leave'];
+  const rows = list.map(s=>{
+    const r = saved[s.id] || {};
+    return `<tr data-row="${esc(s.id)}">
+      <td class="sn" data-label="${L.roll}">${esc(s.roll)}</td>
+      <td class="nm">${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td>
+      <td data-label="${L.sabaq} — ${L.detailSabaq}">${txt(s.id,'sabaq_detail',r.sabaq_detail,L.sabaq)}</td>
+      <td data-label="${L.sabaq} — ${L.listener}">${txt(s.id,'sabaq_listener',r.sabaq_listener,L.listener)}</td>
+      <td data-label="${L.sabaq} — ${L.mistakes}">${num(s.id,'sabaq_mistakes',r.sabaq_mistakes,L.mistakes)}</td>
+      <td data-label="${L.sabaq} — ${L.atkan}">${num(s.id,'sabaq_atkan',r.sabaq_atkan,L.atkan)}</td>
+      <td data-label="${L.sabqi} — ${L.detail}">${txt(s.id,'sabqi_detail',r.sabqi_detail,L.sabqi)}</td>
+      <td data-label="${L.sabqi} — ${L.listener}">${txt(s.id,'sabqi_listener',r.sabqi_listener,L.listener)}</td>
+      <td data-label="${L.sabqi} — ${L.mistakes}">${num(s.id,'sabqi_mistakes',r.sabqi_mistakes,L.mistakes)}</td>
+      <td data-label="${L.sabqi} — ${L.atkan}">${num(s.id,'sabqi_atkan',r.sabqi_atkan,L.atkan)}</td>
+      <td data-label="${L.manzil} — ${L.detail}">${txt(s.id,'manzil_detail',r.manzil_detail,L.manzil)}</td>
+      <td data-label="${L.manzil} — ${L.listener}">${txt(s.id,'manzil_listener',r.manzil_listener,L.listener)}</td>
+      <td data-label="${L.manzil} — ${L.mistakes}">${num(s.id,'manzil_mistakes',r.manzil_mistakes,L.mistakes)}</td>
+      <td data-label="${L.manzil} — ${L.atkan}">${num(s.id,'manzil_atkan',r.manzil_atkan,L.atkan)}</td>
+      <td data-label="${L.time1}">${sel(s.id,'time1',r.time1,T4)}</td>
+      <td data-label="${L.time2}">${sel(s.id,'time2',r.time2,T4)}</td>
+      <td data-label="${L.uniform}">${sel(s.id,'uniform',r.uniform,['complete','incomplete'])}</td>
+      <td data-label="${L.note}">${txt(s.id,'note',r.note,L.note)}</td>
+      <td class="dr-actions" data-label="${L.tapSend}"><button type="button" class="drWa" data-sid="${esc(s.id)}">${L.wa}</button></td>
+    </tr>`;
+  }).join('');
+  return `
+  <h2 class="page-title">${L.title}</h2>
+  <p class="page-sub">${L.sub}</p>
+  <div class="card"><div class="dr-top">
+    <div><label>${L.date}</label><input type="date" id="drDate" value="${esc(date)}" max="${esc(todayInPakistan())}"></div>
+    <div><label>${L.cls}</label><select id="drClass"><option value="">${L.all}</option>${classes.map(c=>`<option value="${esc(c)}" ${reportClass===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+    <div><label>${L.teacher}</label><input id="drTeacher" maxlength="100" value="${esc(teacher)}"></div>
+  </div></div>
+  <div class="card">
+    ${reportsLoadedKey!==date ? `<div class="dr-msg">${L.loading}</div>` : ''}
+    ${list.length ? `<div class="tablewrap"><table class="dr-grid" id="drGrid">
+      <thead>
+        <tr class="grp"><th rowspan="2">${L.roll}</th><th rowspan="2">${L.name}</th><th colspan="4">${L.sabaq}</th><th colspan="4">${L.sabqi}</th><th colspan="4">${L.manzil}</th><th colspan="3">${L.attendance}</th><th rowspan="2">${L.note}</th><th rowspan="2">${L.tapSend}</th></tr>
+        <tr><th>${L.detailSabaq}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.time1}</th><th>${L.time2}</th><th>${L.uniform}</th></tr>
+      </thead><tbody>${rows}</tbody></table></div>
+      <div id="drMsg" class="dr-msg ${esc(reportMsg.cls)}">${esc(reportMsg.text)}</div>
+      <button class="btn" id="drSaveBtn">${L.save}</button>`
+      : `<div class="empty">${L.noStudents}</div>`}
+  </div>`;
+}
+
+function collectReportRows(){
+  const rows = [];
+  document.querySelectorAll('#drGrid tbody tr').forEach(tr=>{
+    const sid = tr.dataset.row; const o = {student_id:sid};
+    tr.querySelectorAll('[data-f]').forEach(inp=>{
+      const f = inp.dataset.f; const v = inp.value;
+      o[f] = /_(mistakes|atkan)$/.test(f) ? numOrNull(v) : String(v).trim();
+    });
+    rows.push(o);
+  });
+  return rows;
+}
+
+function buildParentMessage(s, row, date){
+  const L = DR_L.ur;   // parents get the message in Urdu
+  const line = (label, d, who, m, a)=>{
+    if(!d && !who && m==null && a==null) return '';
+    return `${label}: ${d||'—'}${who?` (${L.listener}: ${who})`:''} — ${L.mistakes} ${m==null?0:m}، ${L.atkan} ${a==null?0:a}`;
+  };
+  const digits = String(s.contact||'').replace(/\D/g,'');
+  const code = s.roll + '-' + digits.slice(-3);
+  const lines = [
+    L.msgHello,
+    `${s.name} (${s.cls}) ${L.msgReportOf} — ${date}`,
+    line(L.sabaq, row.sabaq_detail, row.sabaq_listener, row.sabaq_mistakes, row.sabaq_atkan),
+    line(L.sabqi, row.sabqi_detail, row.sabqi_listener, row.sabqi_mistakes, row.sabqi_atkan),
+    line(L.manzil, row.manzil_detail, row.manzil_listener, row.manzil_mistakes, row.manzil_atkan),
+    (row.time1||row.time2||row.uniform) ? `${L.attendance}: ${L.time1} ${row.time1?L[row.time1]:'—'}، ${L.time2} ${row.time2?L[row.time2]:'—'} | ${L.uniform}: ${row.uniform?L[row.uniform]:'—'}` : '',
+    row.note ? `${L.note}: ${row.note}` : '',
+    '',
+    'جامعہ حدیبیہ تعلیم القرآن',
+    `${L.msgView}: ${location.origin}/#check-${code}`,
+    `${L.msgCode}: ${code}`
+  ];
+  return lines.filter((x,i)=> x!=='' || i===lines.length-3).join('\n');
+}
+
+function bindReportEvents(){
+  const drDate = el('drDate'), drClass = el('drClass'), drTeacher = el('drTeacher'), save = el('drSaveBtn');
+  if(drDate) drDate.onchange = ()=>{ if(!drDate.value) return; reportDate = drDate.value; reportMsg = {text:'',cls:''}; render(); };
+  if(drClass) drClass.onchange = ()=>{ reportClass = drClass.value; reportMsg = {text:'',cls:''}; render(); };
+  if(drTeacher) drTeacher.oninput = ()=>{ reportTeacher = drTeacher.value; lsSet('hud_teacher', drTeacher.value); };
+  if(save) save.onclick = async ()=>{
+    const L = DR(); const date = reportDate || todayInPakistan(); const msg = el('drMsg');
+    save.disabled = true; msg.className='dr-msg'; msg.textContent = L.saving;
+    try{
+      const rows = collectReportRows();
+      const {data, error} = await sb.rpc('save_daily_reports', {p_username:adminUser, p_password:adminPass, p_date:date, p_teacher:(el('drTeacher').value||'').trim(), p_rows:rows});
+      if(error) throw error;
+      reportsLoadedKey = null;   // reload from the database
+      reportMsg = {text:L.saved.replace('{n}', data), cls:'ok'};
+      await loadReports(date);
+    }catch(e){
+      const m = String((e && e.message) || e);
+      msg.className = 'dr-msg err'; msg.textContent = L.failed;
+      if(!/invalid_input|invalid_date/.test(m)) showDebugError(m);
+      save.disabled = false;
+    }
+  };
+  document.querySelectorAll('.drWa').forEach(b=>{
+    const s = students.find(x=>x.id===b.dataset.sid); if(!s) return;
+    const digits = String(s.contact||'').replace(/\D/g,'');
+    if(digits.length < 10){ b.disabled = true; b.textContent = DR().noNumber; return; }
+    b.onclick = ()=>{
+      const tr = b.closest('tr'); const row = {};
+      tr.querySelectorAll('[data-f]').forEach(inp=>{ const f=inp.dataset.f; row[f] = /_(mistakes|atkan)$/.test(f) ? numOrNull(inp.value) : String(inp.value).trim(); });
+      const date = reportDate || todayInPakistan();
+      let num = digits; if(num.length===11 && num[0]==='0') num = '92'+num.slice(1);
+      window.open('https://wa.me/'+num+'?text='+encodeURIComponent(buildParentMessage(s,row,date)), '_blank', 'noopener');
+      b.classList.add('sent'); b.textContent = DR().sent;
+    };
+  });
+}
+// ===================== /DAILY REPORT =====================
 
 function renderAdminLogin(){
   return `
@@ -687,11 +931,11 @@ function renderAdminLogin(){
   </div>`;
 }
 function renderAdminPanel(){
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayInPakistan();
   const todayCount = Object.keys(attendance[today]||{}).length;
-  const curMonth = new Date().toISOString().slice(0,7);
+  const curMonth = today.slice(0,7);
   let mPresent=0, mTotal=0;
-  Object.keys(attendance).forEach(d=>{ if(d.slice(0,7)===curMonth) Object.values(attendance[d]).forEach(v=>{ mTotal++; if(v==='present') mPresent++; }); });
+  Object.keys(attendance).forEach(d=>{ if(d.slice(0,7)===curMonth) Object.values(attendance[d]).forEach(v=>{ if(v==='leave') return; mTotal++; if(v==='present') mPresent++; }); });
   const mPct = mTotal ? Math.round(mPresent/mTotal*100) : 0;
   return `
   <h2 class="page-title">${t().adminTitle} <button class="btn secondary small" id="adminLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
@@ -737,7 +981,7 @@ function renderFinance(){
         <div><label>${t().category}</label><input name="category" placeholder="e.g. Monthly Chanda"></div>
         <div><label>${t().amount}</label><input name="amount" type="number" min="0"></div>
       </div>
-      <label>${t().dateL}</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}">
+      <label>${t().dateL}</label><input name="date" type="date" value="${todayInPakistan()}">
       <div id="raseedFormErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
       <button class="btn" type="submit">${t().raseedTitle}</button>
     </form>
@@ -997,8 +1241,26 @@ function bindEvents(){
 
   const attDatePicker = el('attDatePicker');
   if(attDatePicker) attDatePicker.onchange = ()=>{ selectedAttDate = attDatePicker.value; render(); };
+  const attClassSel = el('attClassSel');
+  if(attClassSel) attClassSel.onchange = ()=>{ attClass = attClassSel.value; render(); };
+  const presentAllBtn = el('presentAllBtn');
+  if(presentAllBtn) presentAllBtn.onclick = async ()=>{
+    const useDate = selectedAttDate || todayInPakistan();
+    const list = students.filter(s=> !attClass || s.cls===attClass);
+    if(!list.length) return;
+    const cur = attendance[useDate] || {};
+    const overwrite = list.filter(s=> cur[s.id] && cur[s.id]!=='present').length;
+    if(overwrite && !confirm(t().presentAllConfirm.replace('{n}', list.length))) return;
+    try{
+      const {error} = await sb.rpc('mark_attendance_bulk', {p_username:adminUser, p_password:adminPass, p_date:useDate, p_status:'present', p_student_ids:list.map(s=>s.id)});
+      if(error) throw error;
+      if(!attendance[useDate]) attendance[useDate] = {};
+      list.forEach(s=>{ attendance[useDate][s.id] = 'present'; });
+      render();
+    }catch(e){ showDebugError(e.message || String(e)); }
+  };
   document.querySelectorAll('.attRadio').forEach(r=> r.onchange = async ()=>{
-    const useDate = selectedAttDate || new Date().toISOString().slice(0,10);
+    const useDate = selectedAttDate || todayInPakistan();
     if(!attendance[useDate]) attendance[useDate]={};
     attendance[useDate][r.dataset.sid] = r.value;
     render();
@@ -1014,13 +1276,16 @@ function bindEvents(){
     const box = el('checkResult');
     if(!q) return;
     try{
-      const {data, error} = await sb.rpc('get_public_attendance', {p_query:q});
+      const {data, error} = await sb.rpc('get_public_student', {p_query:q});
       if(error) throw error;
       if(!data || !data.length){ box.innerHTML = `<div class="card"><div class="empty">${t().noResult}</div></div>`; return; }
       box.innerHTML = data.map(match=>{
         const records = (match.attendance||[]).slice().sort((a,b)=> a.date<b.date?1:-1);
         const presentCount = records.filter(r=>r.status==='present').length;
-        const pct = records.length ? Math.round(presentCount/records.length*100) : 0;
+        const absentCount = records.filter(r=>r.status==='absent').length;
+        const leaveCount = records.filter(r=>r.status==='leave').length;
+        const denom = presentCount + absentCount;
+        const pct = denom ? Math.round(presentCount/denom*100) : 0;
         const initials = match.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
         return `
         <div class="card">
@@ -1029,10 +1294,12 @@ function bindEvents(){
             <div><h3 style="margin:0;">${esc(match.name)} <span class="roll">#${esc(match.roll)}</span></h3>
             <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${esc(match.cls)}${match.guardian ? ' · ' + t().fatherGuardian + ': ' + esc(match.guardian) : ''}</p></div>
           </div>
-          <div>${t().attendancePct}: <b>${pct}%</b></div>
+          <div>${t().attendancePct}: <b>${pct}%</b> <span class="rchip ok">${t().present}: ${presentCount}</span><span class="rchip bad">${t().absent}: ${absentCount}</span><span class="rchip warn">${t().leave}: ${leaveCount}</span></div>
           <div class="progress-bar"><div style="width:${pct}%;"></div></div>
+          <h3 style="margin-top:20px;">${DR().reportsTitle}</h3>
+          ${reportCardsHTML(match.reports)}
           <h3 style="margin-top:20px;">${t().attendanceHistory}</h3>
-          ${records.length? `<table><tr><th>${t().dateL}</th><th>${t().present}/${t().absent}</th></tr>${records.map(r=>`<tr><td>${esc(r.date)}</td><td><span class="pill ${esc(r.status)}">${t()[r.status]}</span></td></tr>`).join('')}</table>` : `<div class="empty">—</div>`}
+          ${records.length? `<div class="tablewrap"><table><tr><th>${t().dateL}</th><th>${t().present} / ${t().absent} / ${t().leave}</th></tr>${records.map(r=>`<tr><td>${esc(r.date)}</td><td><span class="pill ${esc(r.status)}">${t()[r.status]}</span></td></tr>`).join('')}</table></div>` : `<div class="empty">—</div>`}
         </div>`;
       }).join('');
     }catch(e){
@@ -1055,11 +1322,11 @@ function bindEvents(){
       }
       const {data, error} = await sb.rpc('verify_login', {p_username:u, p_password:p});
       if(error) throw error;
-      if(data === 'admin'){ adminUser=u; adminPass=p; adminOK=true; await loadAdminData(); render(); }
+      if(data === 'admin'){ adminUser=u; adminPass=p; adminOK=true; await loadAdminData(); renderNav(); render(); }
       else { el('adminErr').textContent = data === 'locked' ? t().lockedMsg : t().wrongCreds; }
     }catch(e){ showDebugError(e.message || String(e)); }
   };
-  const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ adminOK=false; adminUser=null; adminPass=null; editingStudent=-1; page='home'; render(); renderNav(); };
+  const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = ()=>{ adminOK=false; adminUser=null; adminPass=null; editingStudent=-1; reportsByDate={}; reportsLoadedKey=null; reportTeacher=null; page='home'; render(); renderNav(); };
   const resetAdminBtn = el('resetAdminBtn');
   if(resetAdminBtn) resetAdminBtn.onclick = async ()=>{
     if(resetAdminBtn.dataset.armed==='1'){
@@ -1150,6 +1417,9 @@ document.addEventListener('keydown', e=>{
 if(location.hash === '#admin') page = 'admin';
 if(location.hash === '#finance') page = 'finance';
 if(location.hash === '#mycontrib') page = 'mycontrib';
+let initialCheck = '';
+if(location.hash === '#check') page = 'check';
+if(location.hash.startsWith('#check-')){ page = 'check'; initialCheck = decodeURIComponent(location.hash.slice(7)); }
 if(location.hash.startsWith('#mycontrib-')){
   page = 'mycontrib';
   mycontribCode = decodeURIComponent(location.hash.slice(11));
@@ -1157,7 +1427,9 @@ if(location.hash.startsWith('#mycontrib-')){
 
 el('footNote').textContent = t().footNote;
 renderNav();
-loadAll();
+loadAll().then(()=>{
+  if(page==='check' && initialCheck){ const ci=el('checkInput'); if(ci){ ci.value=initialCheck; el('checkBtn').click(); } }
+});
 if(page==='mycontrib' && mycontribCode){ doMycontribSearch(mycontribCode); }
 </script>
 </body>
