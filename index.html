@@ -265,7 +265,7 @@ en:{
   attendanceHistory:"Attendance Record",attendancePct:"Attendance",
   adminTitle:"Admin Login",adminSub:"Log in to manage prayer times, announcements, classes, and student records.",
   username:"Username",password:"Password",login:"Log In",logout:"Log Out",
-  setCredsNote:"No admin account set yet — create one now.",wrongCreds:"Incorrect username or password.",lockedMsg:"Too many wrong attempts. Please wait 15 to 30 minutes and try again.",
+  setCredsNote:"No admin account set yet — create one now.",wrongCreds:"Incorrect username or password.",lockedMsg:"Too many wrong attempts. Please wait 15 to 30 minutes and try again.",attDateLabel:"Attendance Date (change to add/edit a past date)",adminHint:"Manage everything from Home (prayer times, announcements) and Madrissa (classes, admissions, students, attendance) using the navigation above.",nameUrL:"Name in Urdu",guardianUrL:"Father / Guardian in Urdu",urduHint:"Shown when the website is in Urdu.",linkTitle:"Private report link",copyLinkBtn:"Copy link",newLinkBtn:"Make new link",newLinkConfirm:"Make a new private link for {name}? The old link stops working immediately and you must send the new one to the parent.",linkCopied:"Link copied.",linkNew:"New link is ready and copied. Send it to the parent.",rupees:"Rs",
   resetAccount:"Forgot it? Reset admin account",resetConfirmClick:"Click again to confirm reset",
   loggedInAs:"Logged in as",
   financeTitle:"Finance Login",financeSub:"Restricted — only authorised users can enter.",
@@ -325,7 +325,7 @@ ur:{
   attendanceHistory:"حاضری کا ریکارڈ",attendancePct:"حاضری کی شرح",
   adminTitle:"ایڈمن لاگ ان",adminSub:"نماز کے اوقات، اعلانات، جماعتیں اور طلباء کا ریکارڈ منظم کرنے کے لیے لاگ ان کریں۔",
   username:"صارف نام",password:"پاس ورڈ",login:"لاگ ان",logout:"لاگ آؤٹ",
-  setCredsNote:"ابھی تک کوئی ایڈمن اکاؤنٹ نہیں — ابھی ایک بنائیں۔",wrongCreds:"غلط صارف نام یا پاس ورڈ۔",lockedMsg:"بہت زیادہ غلط کوششیں ہو چکی ہیں۔ 15 سے 30 منٹ بعد دوبارہ کوشش کریں۔",
+  setCredsNote:"ابھی تک کوئی ایڈمن اکاؤنٹ نہیں — ابھی ایک بنائیں۔",wrongCreds:"غلط صارف نام یا پاس ورڈ۔",lockedMsg:"بہت زیادہ غلط کوششیں ہو چکی ہیں۔ 15 سے 30 منٹ بعد دوبارہ کوشش کریں۔",attDateLabel:"حاضری کی تاریخ (پرانی تاریخ لگانے یا بدلنے کے لیے تاریخ تبدیل کریں)",adminHint:"اوپر دیے گئے مینو سے سب کچھ سنبھالیں: صفحہ اول (نماز کے اوقات، اعلانات) اور مدرسہ (کلاسیں، داخلے، طلبہ، حاضری)۔",nameUrL:"اردو میں نام",guardianUrL:"اردو میں والد / سرپرست کا نام",urduHint:"ویب سائٹ اردو میں کھولنے پر یہی نام دکھایا جاتا ہے۔",linkTitle:"نجی رپورٹ لنک",copyLinkBtn:"لنک کاپی کریں",newLinkBtn:"نیا لنک بنائیں",newLinkConfirm:"{name} کے لیے نیا نجی لنک بنائیں؟ پرانا لنک فوراً بند ہو جائے گا، اور نیا لنک والد کو بھیجنا ہوگا۔",linkCopied:"لنک کاپی ہو گیا۔",linkNew:"نیا لنک تیار ہے اور کاپی ہو گیا۔ والد کو بھیج دیں۔",rupees:"روپے",
   resetAccount:"بھول گئے؟ ایڈمن اکاؤنٹ ری سیٹ کریں",resetConfirmClick:"تصدیق کے لیے دوبارہ کلک کریں",
   loggedInAs:"لاگ ان بطور",
   financeTitle:"مالیات لاگ ان",financeSub:"محدود رسائی — صرف مجاز صارفین داخل ہو سکتے ہیں۔",
@@ -461,7 +461,7 @@ async function loadAdminData(){
     if(admRes.error) throw admRes.error;
     if(attRes.error) throw attRes.error;
     if(notifRes.error) throw notifRes.error;
-    students = (studRes.data||[]).map(s=>({id:s.id, roll:s.roll, name:s.name, cls:s.cls, guardian:s.guardian, contact:s.contact, token:s.report_token}));
+    students = (studRes.data||[]).map(s=>({id:s.id, roll:s.roll, name:s.name, cls:s.cls, guardian:s.guardian, contact:s.contact, token:s.report_token, name_ur:s.name_ur, guardian_ur:s.guardian_ur}));
     admissions = (admRes.data||[]).map(a=>({id:a.id, admNo:a.adm_no, admDate:a.adm_date, name:a.name, guardian:a.guardian, dob:a.dob, cls:a.cls, studentIdCard:a.student_id_card, fatherIdCard:a.father_id_card, residence:a.residence, contact:a.contact, prevInfo:a.prev_info}));
     attendance = {};
     (attRes.data||[]).forEach(r=>{ if(!attendance[r.date]) attendance[r.date]={}; attendance[r.date][r.student_id]=r.status; });
@@ -478,6 +478,44 @@ async function pushSiteContent(){
   }catch(e){ showDebugError(e.message || String(e)); }
 }
 
+
+// ---- Urdu display helpers (names, classes, prayer names/times, categories, currency, notifications)
+const CLS_UR={'Hifz':'حفظ','Nazira':'ناظرہ'};
+const PRAYER_UR={'Fajr':'فجر','Dhuhr':'ظہر','Zuhr':'ظہر','Asr':'عصر','Maghrib':'مغرب','Isha':'عشاء','Jumuah':'جمعہ','Jummah':'جمعہ','Jumma':'جمعہ','Sunrise':'طلوعِ آفتاب','Ishraq':'اشراق','Zawal':'زوال','Tahajjud':'تہجد'};
+const CAT_UR={'Monthly Chanda':'ماہانہ چندہ','Zakat':'زکوٰۃ','Sadaqah':'صدقہ','Fitra':'فطرہ','General Donation':'عام عطیہ','Donation':'عطیہ'};
+function clsLbl(c){ return lang==='ur' ? (CLS_UR[c]||c) : c; }
+function catLbl(c){ return lang==='ur' ? (CAT_UR[c]||c) : c; }
+function nmOf(o){ return (lang==='ur' && o.name_ur) ? o.name_ur : (o.name||''); }
+function gdOf(o){ return (lang==='ur' && o.guardian_ur) ? o.guardian_ur : (o.guardian||''); }
+function prayerLbl(n){ return lang==='ur' ? (PRAYER_UR[String(n).trim()]||n) : n; }
+function timeUr(tm){
+  if(lang!=='ur') return tm;
+  const m=String(tm).match(/^\s*(\d{1,2}):(\d{2})\s*(AM|PM)\b(.*)$/i); if(!m) return tm;
+  const h=Number(m[1]); const h24 = m[3].toUpperCase()==='PM' ? (h%12)+12 : (h%12);
+  const part = h24<4 ? 'رات' : h24<12 ? 'صبح' : h24<16 ? 'دوپہر' : h24<19 ? 'شام' : 'رات';
+  return `${h}:${m[2]} ${part}${m[4]||''}`;
+}
+function rsLbl(n){ const x=Number(n).toLocaleString(); return lang==='ur' ? `${x} ${t().rupees}` : `Rs ${x}`; }
+function notifLbl(msg){
+  if(lang!=='ur') return msg; let m;
+  if((m=msg.match(/^New admission application from (.+) for (.+)\.$/))) return `${m[1]} کی طرف سے ${clsLbl(m[2])} کے لیے نئی داخلہ درخواست۔`;
+  if((m=msg.match(/^Receipt #(\d+) issued to (.+) for Rs (.+)\.$/))) return `رسید نمبر ${m[1]}: ${m[2]} کو ${m[3]} روپے کی رسید جاری ہوئی۔`;
+  return msg;
+}
+function fmtDateTime(x){
+  try{
+    if(!x || isNaN(new Date(x))) return '';
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Karachi',year:'numeric',month:'2-digit',day:'2-digit',hour:'numeric',minute:'2-digit',hour12:false}).formatToParts(new Date(x)).map(o=>[o.type,o.value]));
+    const h24 = Number(p.hour)%24, h12 = h24%12===0 ? 12 : h24%12;
+    const part = lang==='ur' ? (h24<4 ? 'رات' : h24<12 ? 'صبح' : h24<16 ? 'دوپہر' : h24<19 ? 'شام' : 'رات') : (h24<12 ? 'AM' : 'PM');
+    return `${p.day}/${p.month}/${p.year} ${h12}:${p.minute} ${part}`;
+  }catch(e){ return String(x); }
+}
+const isNazira = c => /nazira|ناظرہ/i.test(c||'');
+const isBlank = v => v==null || String(v).trim()==='';
+async function copyToClip(text){ try{ await navigator.clipboard.writeText(text); return true; }catch(e){ window.prompt('Copy:', text); return false; } }
+const privateLink = st => `${location.origin}/#r-${st.token}`;
+
 function setLang(l){
   lang=l;
   el('btnEN').classList.toggle('on', l==='en');
@@ -486,6 +524,7 @@ function setLang(l){
   el('brandSub').textContent = l==='ur' ? 'جامعہ حدیبیہ تعلیم القرآن' : 'Jamia Hudabia Taleem Al Quran';
   el('brandTitle').textContent = l==='ur' ? 'جامع مسجد حدیبیہ' : 'Jamia Masjid Hudabia';
   el('footNote').textContent = t().footNote;
+  const bh=document.querySelector('.brand'); if(bh) bh.setAttribute('aria-label', l==='ur' ? 'صفحۂ اول' : 'Home');
   renderNav(); render(); renderBell();
 }
 
@@ -519,10 +558,10 @@ function render(){
 function renderHome(){
   return `
   <div class="hero">
-    <img src="${MASJID_IMG}" alt="Jamia Masjid Hudabia">
+    <img src="${MASJID_IMG}" alt="${lang==='ur'?'جامع مسجد حدیبیہ':'Jamia Masjid Hudabia'}">
     <div class="hero-content">
       <div class="eyebrow">${t().heroEyebrow}</div>
-      <h1>Jamia Masjid Hudabia</h1>
+      <h1>${lang==='ur'?'جامع مسجد حدیبیہ':'Jamia Masjid Hudabia'}</h1>
       <p>${t().heroCaptionSub}</p>
     </div>
   </div>
@@ -532,11 +571,11 @@ function renderHome(){
       <p style="font-size:11.5px;color:var(--muted);margin:-8px 0 14px;">${t().prayerAutoNote}</p>
       <div class="card-grid">
         ${content.prayerTimes.map((p,i)=> editingPrayer===i ? `
-          <div class="prayer-card"><div class="pname">${esc(p.name)}</div>
+          <div class="prayer-card"><div class="pname">${esc(prayerLbl(p.name))}</div>
             <input id="prayerEditInput" value="${esc(p.time)}" style="margin-top:8px;text-align:center;color:#111;">
             <button class="btn small" data-i="${i}" id="savePrayerBtn" style="margin-top:8px;">${t().save}</button>
           </div>` : `
-          <div class="prayer-card"><div class="pname">${esc(p.name)}</div><div class="ptime">${esc(p.time)}</div>
+          <div class="prayer-card"><div class="pname">${esc(prayerLbl(p.name))}</div><div class="ptime">${esc(timeUr(p.time))}</div>
             ${adminOK?`<button class="pedit" data-i="${i}" data-act="editPrayer">✎ ${t().save}</button>`:''}
           </div>`).join('')}
       </div>
@@ -553,14 +592,14 @@ function renderHome(){
 function renderMadrissa(){
   return `
   <div class="madrissa-banner" style="border-radius:18px;overflow:hidden;margin-bottom:26px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);">
-    <img src="${LOGO_IMG}" alt="Jamia Hudabia Taleem Al Quran" style="width:100%;display:block;max-height:150px;object-fit:contain;padding:16px;background:#fff;">
+    <img src="${LOGO_IMG}" alt="${lang==='ur'?'جامعہ حدیبیہ تعلیم القرآن':'Jamia Hudabia Taleem Al Quran'}" style="width:100%;display:block;max-height:150px;object-fit:contain;padding:16px;background:#fff;">
   </div>
   <h2 class="page-title">${t().madrissaTitle}</h2>
   <p class="page-sub">${t().madrissaSub}</p>
   <div class="card">
     <h3>${t().classesOffered} ${adminOK?`<span class="edit-badge">${t().editMode}</span>`:''}</h3>
     <div class="card-grid">
-      ${content.classes.map((c,i)=>`<div class="class-chip">${esc(c)}${adminOK?`<button class="cls-del" data-i="${i}" data-act="delClass">✕</button>`:''}</div>`).join('')}
+      ${content.classes.map((c,i)=>`<div class="class-chip">${esc(clsLbl(c))}${adminOK?`<button class="cls-del" data-i="${i}" data-act="delClass">✕</button>`:''}</div>`).join('')}
     </div>
     ${adminOK?`<form id="addClassForm" novalidate style="margin-top:16px;"><label>${t().newClass}</label><input name="cls"><div id="addClassErr" style="color:var(--bad);font-size:12px;margin-top:4px;"></div><button class="btn small" type="submit" style="margin-top:10px;">${t().add}</button></form>`:''}
   </div>
@@ -589,7 +628,7 @@ function renderMadrissa(){
       <div class="grid2">
         <div><label>${t().admissionDate}</label><input name="admDate" type="date" value="${todayInPakistan()}"></div>
         <div><label>${t().classApplying}</label>
-          <select name="cls">${content.classes.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}</select>
+          <select name="cls">${content.classes.map(c=>`<option value="${esc(c)}">${esc(clsLbl(c))}</option>`).join('')}</select>
         </div>
       </div>
       <div class="grid2">
@@ -605,14 +644,14 @@ function renderMadrissa(){
   <div class="section-heading" style="margin-top:32px;">${t().pendingApps} (${admissions.length})</div>
   <div class="card">
     ${admissions.length? `<table><tr><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${admissions.map((a,i)=>`
-      <tr><td>${esc(a.name)}</td><td>${esc(a.guardian||'')}</td><td>${esc(a.cls)}</td><td>${esc(a.contact)}</td>
+      <tr><td>${esc(a.name)}</td><td>${esc(a.guardian||'')}</td><td>${esc(clsLbl(a.cls))}</td><td>${esc(a.contact)}</td>
       <td class="row-actions"><button data-i="${i}" class="enrollBtn">${t().enroll}</button><button data-i="${i}" class="rejectAppBtn">${t().rejectApp}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">—</div>`}
   </div>
   <div class="section-heading">${t().studentsList} (${students.length})</div>
   <div class="card">
     ${students.length? `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th><th></th></tr>${students.map((s,i)=>`
-      <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}</td><td>${esc(s.guardian||'')}</td><td>${esc(s.cls)}</td><td>${esc(s.contact||'')}</td>
+      <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(nmOf(s))}</td><td>${esc(gdOf(s))}</td><td>${esc(clsLbl(s.cls))}</td><td>${esc(s.contact||'')}</td>
       <td class="row-actions"><button data-i="${i}" class="editStudent">${t().editBtn}</button><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">${t().noStudents}</div>`}
     ${(editingStudent>=0 && students[editingStudent]) ? `
@@ -627,8 +666,16 @@ function renderMadrissa(){
         <div><label>${t().fatherGuardian}</label><input name="guardian" value="${esc(students[editingStudent].guardian||'')}"></div>
       </div>
       <div class="grid2">
+        <div><label>${t().nameUrL}</label><input name="name_ur" dir="rtl" lang="ur" value="${esc(students[editingStudent].name_ur||'')}"></div>
+        <div><label>${t().guardianUrL}</label><input name="guardian_ur" dir="rtl" lang="ur" value="${esc(students[editingStudent].guardian_ur||'')}"></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--muted);margin:4px 0 0;">${t().urduHint}</p>
+      <div class="grid2">
         <div><label>${t().contact}</label><input name="contact" inputmode="tel" value="${esc(students[editingStudent].contact||'')}"></div>
-        <div></div>
+        <div><label>${t().linkTitle}</label><div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn secondary small" type="button" id="copyLinkBtn" style="margin:0;">${t().copyLinkBtn}</button>
+          <button class="btn secondary small" type="button" id="newLinkBtn" style="margin:0;">${t().newLinkBtn}</button></div>
+          <div id="linkMsg" style="font-size:12.5px;color:var(--ok);margin-top:6px;"></div></div>
       </div>
       <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0;">${t().contactHelp}</p>
       <div id="editStudentErr" style="color:var(--bad);font-size:12.5px;margin-top:6px;"></div>
@@ -670,7 +717,7 @@ const DR_L={
   reportsTitle:"Daily Reports",noReports:"No daily reports yet.",teacherShort:"Teacher",
   failed:"Could not save. Check the entries and try again.",locked:"Session locked. Try again later.",
   msgHello:"Assalam o Alaikum!",msgReportOf:"daily report",msgView:"See all reports online",msgCode:"Code",
-  msgBlank:"—",privateTitle:"Student Report",badLink:"This link is not valid or has changed. Please ask the madrassa for a new link.",summaryHint:"This is a summary. The full report (mistakes, atkan, who heard, teacher notes) is sent to your WhatsApp as a private link.",warnNoLesson:"Present both times but no lesson entered ({n})",warnBig:"Very high counts — please check",warnTest:"The word 'Test' is written — clear it before sharing",confirmNoLesson:"{name}: no sabaq / sabqi / manzil entered. Send anyway?",confirmTest:"{name}: the report contains the word 'Test'. Send anyway?",msgPrivate:"(This link is only for you. Please do not share it.)"},
+  msgBlank:"—",privateTitle:"Student Report",badLink:"This link is not valid or has changed. Please ask the madrassa for a new link.",summaryHint:"This is a summary. The full report (mistakes, atkan, who heard, teacher notes) is sent to your WhatsApp as a private link.",warnNoLesson:"Present both times but no lesson entered ({n})",warnBig:"Very high counts — please check",warnTest:"The word 'Test' is written — clear it before sharing",confirmNoLesson:"{name}: no sabaq / sabqi / manzil entered. Send anyway?",confirmTest:"{name}: the report contains the word 'Test'. Send anyway?",msgPrivate:"(This link is only for you. Please do not share it.)",simpleHint:"Nazira: only Sabaq, attendance and note are shown.",countsHint:"Mistakes / Atkan: you can write words or numbers (for example 3, kachi)."},
  ur:{title:"روزانہ رپورٹ",sub:"رجسٹر آن لائن بھریں، محفوظ کریں، پھر ہر والد کو واٹس ایپ پر رپورٹ بھیجیں۔",
   date:"تاریخ",cls:"کلاس",teacher:"قاری صاحب",all:"تمام کلاسیں",sabaq:"سبق",sabqi:"سبقی",manzil:"منزل",
   detail:"کتنا / پارہ",detailSabaq:"کتنا سبق",listener:"کس کو سنایا",mistakes:"غلطی",atkan:"اٹکن",
@@ -681,7 +728,7 @@ const DR_L={
   reportsTitle:"روزانہ رپورٹس",noReports:"ابھی تک کوئی روزانہ رپورٹ نہیں۔",teacherShort:"قاری صاحب",
   failed:"محفوظ نہیں ہو سکی۔ اندراجات چیک کر کے دوبارہ کوشش کریں۔",locked:"سیشن لاک ہے۔ بعد میں کوشش کریں۔",
   msgHello:"السلام علیکم!",msgReportOf:"کی روزانہ رپورٹ",msgView:"تمام رپورٹس آن لائن دیکھیں",msgCode:"کوڈ",
-  msgBlank:"—",privateTitle:"طالب علم کی رپورٹ",badLink:"یہ لنک درست نہیں یا بدل چکا ہے۔ براہ کرم مدرسے سے نیا لنک لے لیں۔",summaryHint:"یہ خلاصہ ہے۔ مکمل رپورٹ (غلطی، اٹکن، کس کو سنایا، قاری کا نوٹ) آپ کے واٹس ایپ پر نجی لنک کے ذریعے بھیجی جاتی ہے۔",warnNoLesson:"دونوں وقت حاضر مگر سبق درج نہیں ({n})",warnBig:"بہت زیادہ گنتی — براہ کرم چیک کریں",warnTest:"'Test' لکھا ہوا ہے — بھیجنے سے پہلے مٹا دیں",confirmNoLesson:"{name}: سبق / سبقی / منزل درج نہیں۔ پھر بھی بھیجیں؟",confirmTest:"{name}: رپورٹ میں 'Test' لکھا ہے۔ پھر بھی بھیجیں؟",msgPrivate:"(یہ لنک صرف آپ کے لیے ہے، براہ کرم کسی کو شیئر نہ کریں۔)"}
+  msgBlank:"—",privateTitle:"طالب علم کی رپورٹ",badLink:"یہ لنک درست نہیں یا بدل چکا ہے۔ براہ کرم مدرسے سے نیا لنک لے لیں۔",summaryHint:"یہ خلاصہ ہے۔ مکمل رپورٹ (غلطی، اٹکن، کس کو سنایا، قاری کا نوٹ) آپ کے واٹس ایپ پر نجی لنک کے ذریعے بھیجی جاتی ہے۔",warnNoLesson:"دونوں وقت حاضر مگر سبق درج نہیں ({n})",warnBig:"بہت زیادہ گنتی — براہ کرم چیک کریں",warnTest:"'Test' لکھا ہوا ہے — بھیجنے سے پہلے مٹا دیں",confirmNoLesson:"{name}: سبق / سبقی / منزل درج نہیں۔ پھر بھی بھیجیں؟",confirmTest:"{name}: رپورٹ میں 'Test' لکھا ہے۔ پھر بھی بھیجیں؟",msgPrivate:"(یہ لنک صرف آپ کے لیے ہے، براہ کرم کسی کو شیئر نہ کریں۔)",simpleHint:"ناظرہ: صرف سبق، حاضری اور نوٹ دکھائے جا رہے ہیں۔",countsHint:"غلطی / اٹکن: الفاظ یا نمبر دونوں لکھ سکتے ہیں (مثلاً 3، کچی)۔"}
 };
 function DR(){ return DR_L[lang]||DR_L.en; }
 function timeLbl(v){ const L=DR(); return v ? (L[v]||esc(v)) : '—'; }
@@ -690,9 +737,9 @@ function numOrNull(v){ const x=parseInt(String(v).trim(),10); return Number.isFi
 
 function reportSecHTML(label, detail, listener, m, a){
   const L=DR();
-  if(!detail && !listener && m==null && a==null) return '';
+  if(!detail && !listener && isBlank(m) && isBlank(a)) return '';
   return `<div class="rsec"><b>${label}</b> ${esc(detail||'—')}${listener?` · ${L.listener}: ${esc(listener)}`:''}
-    ${m==null?'':`<span class="rchip bad">${L.mistakes}: ${esc(m)}</span>`}${a==null?'':`<span class="rchip warn">${L.atkan}: ${esc(a)}</span>`}</div>`;
+    ${isBlank(m)?'':`<span class="rchip bad">${L.mistakes}: ${esc(m)}</span>`}${isBlank(a)?'':`<span class="rchip warn">${L.atkan}: ${esc(a)}</span>`}</div>`;
 }
 function reportCardsHTML(reports, mode){
   const L = DR();
@@ -724,13 +771,13 @@ function studentCardHTML(match, mode){
   const leaveCount = records.filter(r=>r.status==='leave').length;
   const denom = presentCount + absentCount;
   const pct = denom ? Math.round(presentCount/denom*100) : 0;
-  const initials = match.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const initials = nmOf(match).split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
   return `
   <div class="card">
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
       <div class="avatar-circle">${esc(initials)}</div>
-      <div><h3 style="margin:0;">${esc(match.name)} <span class="roll">#${esc(match.roll)}</span></h3>
-      <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${esc(match.cls)}${match.guardian ? ' · ' + t().fatherGuardian + ': ' + esc(match.guardian) : ''}</p></div>
+      <div><h3 style="margin:0;">${esc(nmOf(match))} <span class="roll">#${esc(match.roll)}</span></h3>
+      <p style="color:var(--muted);font-size:13.5px;margin:2px 0 0;">${esc(clsLbl(match.cls))}${gdOf(match) ? ' · ' + t().fatherGuardian + ': ' + esc(gdOf(match)) : ''}</p></div>
     </div>
     <div>${t().attendancePct}: <b>${pct}%</b> <span class="rchip ok">${t().present}: ${presentCount}</span><span class="rchip bad">${t().absent}: ${absentCount}</span><span class="rchip warn">${t().leave}: ${leaveCount}</span></div>
     <div class="progress-bar"><div style="width:${pct}%;"></div></div>
@@ -768,11 +815,11 @@ function renderAttendanceForm(){
   return `
     <div class="att-toolbar">
       <div><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${esc(curDate)}" max="${esc(today)}"></div>
-      <div><label>${t().classFilterL}</label><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+      <div><label>${t().classFilterL}</label><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
       <div><button class="btn small" id="presentAllBtn" style="margin:0;">${t().presentAll} (${list.length})</button></div>
     </div>
     <div class="tablewrap"><table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent} / ${t().leave}</th></tr>${list.map(s=>`
-    <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td><td>
+    <tr><td class="roll">#${esc(s.roll)}</td><td>${esc(nmOf(s))}${gdOf(s)?`<span class="guard">${t().fatherGuardian}: ${esc(gdOf(s))}</span>`:''}</td><td>
       ${radio(s,'present')}&nbsp;&nbsp;${radio(s,'absent')}&nbsp;&nbsp;${radio(s,'leave')}
     </td></tr>`).join('')}</table></div>`;
 }
@@ -791,7 +838,7 @@ function renderMonthlyAttendance(){
     });
     const totalD = present+absent;
     const pct = totalD ? Math.round(present/totalD*100) : 0;
-    return `<tr><td class="roll">#${esc(s.roll)}</td><td>${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td><td>${present}</td><td>${absent}</td><td>${leave}</td><td>${pct}%</td></tr>`;
+    return `<tr><td class="roll">#${esc(s.roll)}</td><td>${esc(nmOf(s))}${gdOf(s)?`<span class="guard">${t().fatherGuardian}: ${esc(gdOf(s))}</span>`:''}</td><td>${present}</td><td>${absent}</td><td>${leave}</td><td>${pct}%</td></tr>`;
   }).join('');
   return `
     <label>${t().selectMonth}</label>
@@ -844,26 +891,30 @@ function renderReports(){
   const saved = reportsByDate[date] || {};
   const teacher = reportTeacher===null ? lsGet('hud_teacher') : reportTeacher;
   const sel = (sid,f,val,opts)=>`<select data-sid="${esc(sid)}" data-f="${f}"><option value="">${L.choose}</option>${opts.map(o=>`<option value="${o}" ${val===o?'selected':''}>${L[o]}</option>`).join('')}</select>`;
-  const txt = (sid,f,val,lbl)=>`<input data-sid="${esc(sid)}" data-f="${f}" value="${esc(val||'')}" maxlength="100" aria-label="${esc(lbl)}">`;
-  const num = (sid,f,val,lbl)=>`<input data-sid="${esc(sid)}" data-f="${f}" type="number" min="0" max="999" inputmode="numeric" value="${val==null?'':esc(val)}" aria-label="${esc(lbl)}">`;
+  const txt = (sid,f,val,lbl,dis)=>`<input data-sid="${esc(sid)}" data-f="${f}" value="${esc(val||'')}" maxlength="100" aria-label="${esc(lbl)}" ${dis?'disabled':''}>`;
+  const num = (sid,f,val,lbl,dis)=>`<input data-sid="${esc(sid)}" data-f="${f}" maxlength="30" value="${val==null?'':esc(val)}" aria-label="${esc(lbl)}" ${dis?'disabled':''}>`;
   const T4 = ['present','late','absent','leave'];
+  const simple = !!reportClass && isNazira(reportClass);          // Nazira class: short form (Sabaq + attendance + note)
   const rows = list.map(s=>{
     const r = saved[s.id] || {};
+    const dis = !simple && isNazira(s.cls);                       // Nazira student shown in the mixed list: Sabqi/Manzil switched off
+    const cell = (grp,fld,lbl,html)=>`<td data-label="${grp} — ${lbl}">${html}</td>`;
+    const sabqiManzil = simple ? '' : `
+      ${cell(L.sabqi,'d',L.detail,txt(s.id,'sabqi_detail',r.sabqi_detail,L.sabqi,dis))}
+      ${cell(L.sabqi,'l',L.listener,txt(s.id,'sabqi_listener',r.sabqi_listener,L.listener,dis))}
+      ${cell(L.sabqi,'m',L.mistakes,num(s.id,'sabqi_mistakes',r.sabqi_mistakes,L.mistakes,dis))}
+      ${cell(L.sabqi,'a',L.atkan,num(s.id,'sabqi_atkan',r.sabqi_atkan,L.atkan,dis))}
+      ${cell(L.manzil,'d',L.detail,txt(s.id,'manzil_detail',r.manzil_detail,L.manzil,dis))}
+      ${cell(L.manzil,'l',L.listener,txt(s.id,'manzil_listener',r.manzil_listener,L.listener,dis))}
+      ${cell(L.manzil,'m',L.mistakes,num(s.id,'manzil_mistakes',r.manzil_mistakes,L.mistakes,dis))}
+      ${cell(L.manzil,'a',L.atkan,num(s.id,'manzil_atkan',r.manzil_atkan,L.atkan,dis))}`;
     return `<tr data-row="${esc(s.id)}">
       <td class="sn" data-label="${L.roll}">${esc(s.roll)}</td>
-      <td class="nm">${esc(s.name)}${s.guardian?`<span class="guard">${t().fatherGuardian}: ${esc(s.guardian)}</span>`:''}</td>
-      <td data-label="${L.sabaq} — ${L.detailSabaq}">${txt(s.id,'sabaq_detail',r.sabaq_detail,L.sabaq)}</td>
-      <td data-label="${L.sabaq} — ${L.listener}">${txt(s.id,'sabaq_listener',r.sabaq_listener,L.listener)}</td>
-      <td data-label="${L.sabaq} — ${L.mistakes}">${num(s.id,'sabaq_mistakes',r.sabaq_mistakes,L.mistakes)}</td>
-      <td data-label="${L.sabaq} — ${L.atkan}">${num(s.id,'sabaq_atkan',r.sabaq_atkan,L.atkan)}</td>
-      <td data-label="${L.sabqi} — ${L.detail}">${txt(s.id,'sabqi_detail',r.sabqi_detail,L.sabqi)}</td>
-      <td data-label="${L.sabqi} — ${L.listener}">${txt(s.id,'sabqi_listener',r.sabqi_listener,L.listener)}</td>
-      <td data-label="${L.sabqi} — ${L.mistakes}">${num(s.id,'sabqi_mistakes',r.sabqi_mistakes,L.mistakes)}</td>
-      <td data-label="${L.sabqi} — ${L.atkan}">${num(s.id,'sabqi_atkan',r.sabqi_atkan,L.atkan)}</td>
-      <td data-label="${L.manzil} — ${L.detail}">${txt(s.id,'manzil_detail',r.manzil_detail,L.manzil)}</td>
-      <td data-label="${L.manzil} — ${L.listener}">${txt(s.id,'manzil_listener',r.manzil_listener,L.listener)}</td>
-      <td data-label="${L.manzil} — ${L.mistakes}">${num(s.id,'manzil_mistakes',r.manzil_mistakes,L.mistakes)}</td>
-      <td data-label="${L.manzil} — ${L.atkan}">${num(s.id,'manzil_atkan',r.manzil_atkan,L.atkan)}</td>
+      <td class="nm">${esc(nmOf(s))}${gdOf(s)?`<span class="guard">${t().fatherGuardian}: ${esc(gdOf(s))}</span>`:''}</td>
+      ${cell(L.sabaq,'d',L.detailSabaq,txt(s.id,'sabaq_detail',r.sabaq_detail,L.sabaq))}
+      ${cell(L.sabaq,'l',L.listener,txt(s.id,'sabaq_listener',r.sabaq_listener,L.listener))}
+      ${cell(L.sabaq,'m',L.mistakes,num(s.id,'sabaq_mistakes',r.sabaq_mistakes,L.mistakes))}
+      ${cell(L.sabaq,'a',L.atkan,num(s.id,'sabaq_atkan',r.sabaq_atkan,L.atkan))}${sabqiManzil}
       <td data-label="${L.time1}">${sel(s.id,'time1',r.time1,T4)}</td>
       <td data-label="${L.time2}">${sel(s.id,'time2',r.time2,T4)}</td>
       <td data-label="${L.uniform}">${sel(s.id,'uniform',r.uniform,['complete','incomplete'])}</td>
@@ -876,15 +927,15 @@ function renderReports(){
   <p class="page-sub">${L.sub}</p>
   <div class="card"><div class="dr-top">
     <div><label>${L.date}</label><input type="date" id="drDate" value="${esc(date)}" max="${esc(todayInPakistan())}"></div>
-    <div><label>${L.cls}</label><select id="drClass"><option value="">${L.all}</option>${classes.map(c=>`<option value="${esc(c)}" ${reportClass===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+    <div><label>${L.cls}</label><select id="drClass"><option value="">${L.all}</option>${classes.map(c=>`<option value="${esc(c)}" ${reportClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
     <div><label>${L.teacher}</label><input id="drTeacher" maxlength="100" value="${esc(teacher)}"></div>
   </div></div>
   <div class="card">
     ${reportsLoadedKey!==date ? `<div class="dr-msg">${L.loading}</div>` : ''}
-    ${list.length ? `<div class="tablewrap"><table class="dr-grid" id="drGrid">
+    ${list.length ? `${simple?`<div class="hint-box">${L.simpleHint}</div>`:''}<div class="hint-box">${L.countsHint}</div><div class="tablewrap"><table class="dr-grid" id="drGrid" style="${simple?'min-width:780px;':''}">
       <thead>
-        <tr class="grp"><th rowspan="2">${L.roll}</th><th rowspan="2">${L.name}</th><th colspan="4">${L.sabaq}</th><th colspan="4">${L.sabqi}</th><th colspan="4">${L.manzil}</th><th colspan="3">${L.attendance}</th><th rowspan="2">${L.note}</th><th rowspan="2">${L.tapSend}</th></tr>
-        <tr><th>${L.detailSabaq}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.time1}</th><th>${L.time2}</th><th>${L.uniform}</th></tr>
+        <tr class="grp"><th rowspan="2">${L.roll}</th><th rowspan="2">${L.name}</th><th colspan="4">${L.sabaq}</th>${simple?'':`<th colspan="4">${L.sabqi}</th><th colspan="4">${L.manzil}</th>`}<th colspan="3">${L.attendance}</th><th rowspan="2">${L.note}</th><th rowspan="2">${L.tapSend}</th></tr>
+        <tr><th>${L.detailSabaq}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th>${simple?'':`<th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th><th>${L.detail}</th><th>${L.listener}</th><th>${L.mistakes}</th><th>${L.atkan}</th>`}<th>${L.time1}</th><th>${L.time2}</th><th>${L.uniform}</th></tr>
       </thead><tbody>${rows}</tbody></table></div>
       <div id="drMsg" class="dr-msg ${esc(reportMsg.cls)}">${esc(reportMsg.text)}</div>
       ${reportWarn.length ? `<div class="dr-warn"><b>⚠</b><ul>${reportWarn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul></div>` : ''}
@@ -899,7 +950,7 @@ function collectReportRows(){
     const sid = tr.dataset.row; const o = {student_id:sid};
     tr.querySelectorAll('[data-f]').forEach(inp=>{
       const f = inp.dataset.f; const v = inp.value;
-      o[f] = /_(mistakes|atkan)$/.test(f) ? numOrNull(v) : String(v).trim();
+      o[f] = String(v).trim();
     });
     rows.push(o);
   });
@@ -909,15 +960,15 @@ function collectReportRows(){
 function buildParentMessage(s, row, date){
   const L = DR_L.ur;   // parents get the message in Urdu
   const line = (label, d, who, m, a)=>{
-    if(!d && !who && m==null && a==null) return '';
-    const nums = [m==null?'':`${L.mistakes} ${m}`, a==null?'':`${L.atkan} ${a}`].filter(Boolean).join('، ');
+    if(!d && !who && isBlank(m) && isBlank(a)) return '';
+    const nums = [isBlank(m)?'':`${L.mistakes} ${m}`, isBlank(a)?'':`${L.atkan} ${a}`].filter(Boolean).join('، ');
     return `${label}: ${d||'—'}${who?` (${L.listener}: ${who})`:''}${nums?` — ${nums}`:''}`;
   };
   const digits = String(s.contact||'').replace(/\D/g,'');
   const link = s.token ? `${location.origin}/#r-${s.token}` : `${location.origin}/#check-${s.roll}-${digits.slice(-3)}`;
   const lines = [
     L.msgHello,
-    `${s.name} (${s.cls}) ${L.msgReportOf} — ${date}`,
+    `${s.name_ur||s.name} (${CLS_UR[s.cls]||s.cls}) ${L.msgReportOf} — ${date}`,
     line(L.sabaq, row.sabaq_detail, row.sabaq_listener, row.sabaq_mistakes, row.sabaq_atkan),
     line(L.sabqi, row.sabqi_detail, row.sabqi_listener, row.sabqi_mistakes, row.sabqi_atkan),
     line(L.manzil, row.manzil_detail, row.manzil_listener, row.manzil_mistakes, row.manzil_atkan),
@@ -939,13 +990,13 @@ function reportWarnings(rows){
   const classHas = {};   // a class where nobody entered lessons (e.g. Nazira) is not flagged
   rows.forEach(r=>{ const st = byId.get(r.student_id); if(st && hasLesson(r)) classHas[st.cls] = true; });
   const names = list => list.slice(0,8).join('، ') + (list.length>8 ? ' …' : '');
-  const missing = rows.filter(r=>{ const st=byId.get(r.student_id); return st && classHas[st.cls] && fullDay(r) && !hasLesson(r); }).map(r=>byId.get(r.student_id).name);
+  const missing = rows.filter(r=>{ const st=byId.get(r.student_id); return st && classHas[st.cls] && fullDay(r) && !hasLesson(r); }).map(r=>nmOf(byId.get(r.student_id)));
   if(missing.length) out.push(L.warnNoLesson.replace('{n}', missing.length) + ': ' + names(missing));
   const big = [];
   rows.forEach(r=>{ const st=byId.get(r.student_id); if(!st) return;
-    ['sabaq','sabqi','manzil'].forEach(k=>['mistakes','atkan'].forEach(f=>{ const v=r[k+'_'+f]; if(v!=null && v>50) big.push(`${st.name} (${L[k]} ${L[f]} ${v})`); })); });
+    ['sabaq','sabqi','manzil'].forEach(k=>['mistakes','atkan'].forEach(f=>{ const v=r[k+'_'+f]; if(/^\d+$/.test(String(v==null?'':v).trim()) && Number(v)>50) big.push(`${nmOf(st)} (${L[k]} ${L[f]} ${v})`); })); });
   if(big.length) out.push(L.warnBig + ': ' + names(big));
-  const tests = rows.filter(testWord).map(r=>(byId.get(r.student_id)||{}).name).filter(Boolean);
+  const tests = rows.filter(testWord).map(r=>nmOf(byId.get(r.student_id)||{})).filter(Boolean);
   if(tests.length) out.push(L.warnTest + ': ' + names(tests));
   return out;
 }
@@ -979,12 +1030,12 @@ function bindReportEvents(){
     if(digits.length < 10){ b.disabled = true; b.textContent = DR().noNumber; return; }
     b.onclick = ()=>{
       const tr = b.closest('tr'); const row = {};
-      tr.querySelectorAll('[data-f]').forEach(inp=>{ const f=inp.dataset.f; row[f] = /_(mistakes|atkan)$/.test(f) ? numOrNull(inp.value) : String(inp.value).trim(); });
+      tr.querySelectorAll('[data-f]').forEach(inp=>{ const f=inp.dataset.f; row[f] = String(inp.value).trim(); });
       const date = reportDate || todayInPakistan();
       const L2 = DR(); const all = collectReportRows();
       const classHasLessons = all.some(r=>{ const st=students.find(x=>x.id===r.student_id); return st && st.cls===s.cls && hasLesson(r); });
-      if(classHasLessons && fullDay(row) && !hasLesson(row) && !confirm(L2.confirmNoLesson.replace('{name}', s.name))) return;
-      if(testWord(row) && !confirm(L2.confirmTest.replace('{name}', s.name))) return;
+      if(classHasLessons && fullDay(row) && !hasLesson(row) && !confirm(L2.confirmNoLesson.replace('{name}', nmOf(s)))) return;
+      if(testWord(row) && !confirm(L2.confirmTest.replace('{name}', nmOf(s)))) return;
       let num = digits; if(num.length===11 && num[0]==='0') num = '92'+num.slice(1);
       window.open('https://wa.me/'+num+'?text='+encodeURIComponent(buildParentMessage(s,row,date)), '_blank', 'noopener');
       b.classList.add('sent'); b.textContent = DR().sent;
@@ -1026,7 +1077,7 @@ function renderAdminPanel(){
     <div class="stat"><div class="icon">${svgIcon('check2')}</div><div class="num">${todayCount}</div><div class="lbl">${t().dashToday}</div></div>
     <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">${mPct}%</div><div class="lbl">${t().dashMonthPct}</div></div>
   </div>
-  <div class="card"><p style="margin:0;font-size:13.5px;color:var(--muted);">Manage everything from <b>Home</b> (prayer times, announcements) and <b>Madrissa</b> (classes, admissions, students, attendance) using the navigation above.</p></div>`;
+  <div class="card"><p style="margin:0;font-size:13.5px;color:var(--muted);">${t().adminHint}</p></div>`;
 }
 
 function renderFinanceLogin(){
@@ -1087,7 +1138,7 @@ function renderRaseedReceiptPrint(){
       <tr><td style="padding:10px 6px;color:var(--muted);">تاریخ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.date)}</td></tr>
       <tr><td style="padding:10px 6px;color:var(--muted);">محترم جناب:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.donor_name)}</td></tr>
       <tr><td style="padding:10px 6px;color:var(--muted);">تفصیل:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);">${esc(r.category)}</td></tr>
-      <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">Rs ${Number(r.amount).toLocaleString()}</td></tr>
+      <tr><td style="padding:10px 6px;color:var(--muted);">مبلغ:</td><td style="padding:10px 6px;border-bottom:1px dotted var(--line);font-weight:700;">${rsLbl(r.amount)}</td></tr>
       <tr><td colspan="2" style="padding-top:30px;text-align:left;color:var(--muted);">دستخط مہتمم: ______________________</td></tr>
     </table>
     <div style="margin-top:18px;padding-top:16px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:14px;">
@@ -1126,7 +1177,7 @@ function renderMycontribResultHTML(){
       <h3 style="margin:6px 0 0;font-size:24px;">${esc(data[0].donor_name)}</h3>
     </div>
     <div class="stat-row">
-      <div class="stat"><div class="num">Rs ${total.toLocaleString()}</div><div class="lbl">${t().totalGiven}</div></div>
+      <div class="stat"><div class="num">${rsLbl(total)}</div><div class="lbl">${t().totalGiven}</div></div>
       <div class="stat"><div class="num">${data.length}</div><div class="lbl">${t().totalReceipts}</div></div>
       ${paid.length ? `<div class="stat"><div class="num">${paid.length}</div><div class="lbl">${t().monthsPaidL}</div></div>` : ''}
     </div>
@@ -1142,7 +1193,7 @@ function renderMycontribResultHTML(){
     <div class="card">
       <h3>${t().receiptHistoryTitle}</h3>
       <div style="overflow-x:auto;"><table><tr><th>${t().receiptNoL}</th><th>${t().dateL}</th><th>${t().category}</th><th>${t().forMonthL}</th><th>${t().amount}</th></tr>
-        ${data.slice().reverse().map(r=>`<tr><td class="roll">#${esc(r.receipt_no)}</td><td>${esc(r.date)}</td><td>${esc(r.category)}</td><td>${r.for_month?esc(fmtMonth(r.for_month)):'—'}</td><td>Rs ${Number(r.amount).toLocaleString()}</td></tr>`).join('')}
+        ${data.slice().reverse().map(r=>`<tr><td class="roll">#${esc(r.receipt_no)}</td><td>${esc(r.date)}</td><td>${esc(catLbl(r.category))}</td><td>${r.for_month?esc(fmtMonth(r.for_month)):'—'}</td><td>${rsLbl(r.amount)}</td></tr>`).join('')}
       </table></div>
     </div>`;
 }
@@ -1185,7 +1236,7 @@ function renderBell(){
   el('bellDot').style.display = unread ? 'block' : 'none';
   const panel = el('bellPanel');
   panel.innerHTML = `<div class="bn-head"><span>${t().notifications}</span><button id="markReadBtn">${t().markAllRead}</button></div>` +
-    (notifications.length ? notifications.map(n=>`<div class="bn-item">${escMsg(n.msg)}<div class="bn-time">${new Date(n.time).toLocaleString()}</div></div>`).join('') : `<div class="bn-empty">${t().noNotifications}</div>`);
+    (notifications.length ? notifications.map(n=>`<div class="bn-item">${escMsg(notifLbl(n.msg))}<div class="bn-time">${fmtDateTime(n.time)}</div></div>`).join('') : `<div class="bn-empty">${t().noNotifications}</div>`);
   const mrb = el('markReadBtn');
   if(mrb) mrb.onclick = async ()=>{
     notifications.forEach(n=>n.read=true); renderBell();
@@ -1251,7 +1302,7 @@ function bindEvents(){
     try{
       const {data, error} = await sb.rpc('enroll_admission', {p_username:adminUser, p_password:adminPass, p_admission_id:a.id});
       if(error) throw error;
-      students.push({id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token});
+      students.push({id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token, name_ur:data.name_ur, guardian_ur:data.guardian_ur});
       admissions.splice(i,1); render();
     }catch(e){ showDebugError(e.message || String(e)); }
   });
@@ -1269,6 +1320,20 @@ function bindEvents(){
   });
   const cancelEditStudent = el('cancelEditStudent');
   if(cancelEditStudent) cancelEditStudent.onclick = ()=>{ editingStudent=-1; render(); };
+  const copyLinkBtn = el('copyLinkBtn'), newLinkBtn = el('newLinkBtn');
+  if(copyLinkBtn) copyLinkBtn.onclick = async ()=>{
+    const st = students[editingStudent]; if(!st || !st.token) return;
+    await copyToClip(privateLink(st)); el('linkMsg').textContent = t().linkCopied;
+  };
+  if(newLinkBtn) newLinkBtn.onclick = async ()=>{
+    const st = students[editingStudent]; if(!st) return;
+    if(!confirm(t().newLinkConfirm.replace('{name}', nmOf(st)))) return;
+    try{
+      const {data, error} = await sb.rpc('regenerate_report_token', {p_username:adminUser, p_password:adminPass, p_student_id:st.id});
+      if(error) throw error;
+      st.token = data; await copyToClip(privateLink(st)); el('linkMsg').textContent = t().linkNew;
+    }catch(e){ showDebugError(e.message || String(e)); }
+  };
   const editStudentForm = el('editStudentForm');
   if(editStudentForm) editStudentForm.onsubmit = async e=>{
     e.preventDefault();
@@ -1281,9 +1346,10 @@ function bindEvents(){
     if(!roll || roll < 1 || !name || !cls){ errBox.textContent = t().fillRequired; return; }
     if(contact && contact.replace(/\D/g,'').length < 7){ errBox.textContent = t().badPhone; return; }
     try{
-      const {data, error} = await sb.rpc('update_student', {p_username:adminUser, p_password:adminPass, p_id:s.id, p_roll:roll, p_name:name, p_cls:cls, p_guardian:guardian, p_contact:contact});
+      const nameUr = String(f.get('name_ur')||'').trim(), guardianUr = String(f.get('guardian_ur')||'').trim();
+      const {data, error} = await sb.rpc('update_student_v2', {p_username:adminUser, p_password:adminPass, p_id:s.id, p_roll:roll, p_name:name, p_cls:cls, p_guardian:guardian, p_contact:contact, p_name_ur:nameUr, p_guardian_ur:guardianUr});
       if(error) throw error;
-      students[editingStudent] = {id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token};
+      students[editingStudent] = {id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token, name_ur:data.name_ur, guardian_ur:data.guardian_ur};
       students.sort((a,b)=> a.roll-b.roll);
       editingStudent = -1; render();
     }catch(err){
@@ -1312,7 +1378,7 @@ function bindEvents(){
     try{
       const {data, error} = await sb.rpc('add_student', {p_username:adminUser, p_password:adminPass, p_name:name, p_cls:cls, p_guardian:f.get('guardian'), p_contact:f.get('contact')});
       if(error) throw error;
-      students.push({id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token});
+      students.push({id:data.id, roll:data.roll, name:data.name, cls:data.cls, guardian:data.guardian, contact:data.contact, token:data.report_token, name_ur:data.name_ur, guardian_ur:data.guardian_ur});
       render();
     }catch(e){ showDebugError(e.message || String(e)); }
   };
@@ -1449,6 +1515,15 @@ function bindEvents(){
   const finLogoutBtn = el('finLogoutBtn'); if(finLogoutBtn) finLogoutBtn.onclick = ()=>{ financeOK=false; financeUser=null; financePass=null; raseedResult=null; page='home'; render(); renderNav(); };
 }
 
+
+function goHome(){
+  page='home'; try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  closeMobile(); renderNav(); render(); window.scrollTo(0,0);
+}
+(function(){ const b=document.querySelector('.brand'); if(!b) return;
+  b.style.cursor='pointer'; b.setAttribute('role','link'); b.setAttribute('tabindex','0'); b.setAttribute('aria-label','Home');
+  b.onclick=goHome; b.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); goHome(); } };
+})();
 el('btnEN').onclick = ()=> setLang('en');
 el('btnUR').onclick = ()=> setLang('ur');
 el('bellBtn').onclick = ()=>{ bellOpen=!bellOpen; el('bellPanel').style.display = bellOpen?'block':'none'; };
