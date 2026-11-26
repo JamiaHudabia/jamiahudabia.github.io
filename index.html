@@ -206,13 +206,17 @@
 .idcard .hd{width:100%;background:#fff;padding:1.6mm 0 0;display:flex;flex-direction:column;align-items:center;gap:.3mm}
 .idcard .hd img.e{height:9.5mm;display:block}.idcard .hd img.u{width:40mm;display:block}
 .idcard .band{width:100%;background:#1c7a3e;color:#fff;font-size:5.6pt;font-weight:700;letter-spacing:.2mm;padding:.8mm 0;border-top:.5mm solid #d4a017;border-bottom:.5mm solid #d4a017}
-.idcard .cp{width:19mm;height:19mm;border-radius:50%;object-fit:cover;border:.7mm solid #d4a017;margin-top:1.6mm;background:#8a8f98;color:#fff;font-size:18pt;font-weight:800;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
-.idcard .cn{font-size:8.6pt;font-weight:800;line-height:1.15;margin-top:1.3mm;padding:0 1.5mm;color:#1c5a30;word-break:break-word}
+.idcard .cp{width:16mm;height:16mm;border-radius:50%;object-fit:cover;border:.7mm solid #d4a017;margin-top:1.6mm;background:#8a8f98;color:#fff;font-size:18pt;font-weight:800;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.idcard .cn{font-size:8.2pt;font-weight:800;line-height:1.12;margin-top:1mm;padding:0 1.5mm;color:#1c5a30;word-break:break-word}
+.idcard .gd{font-size:6.4pt;font-weight:700;color:#5a3a1a;line-height:1.15;padding:0 1.5mm;word-break:break-word}
 .idcard .cm{font-size:6.6pt;margin-top:.5mm;color:#5a3a1a;font-weight:600}
-.idcard .cq{width:19mm;height:19mm;margin-top:1.4mm;background:#fff}.idcard .cq img,.idcard .cq canvas{width:19mm!important;height:19mm!important;display:block}
-.idcard .ft{position:absolute;left:0;right:0;bottom:0;background:#5a3a1a;color:#f3d98a;font-size:5.6pt;font-weight:700;padding:.9mm 0}
+.idcard .cq{width:16.5mm;height:16.5mm;margin-top:1mm;background:#fff}.idcard .cq img,.idcard .cq canvas{width:16.5mm!important;height:16.5mm!important;display:block}
+.idcard .ft{position:absolute;left:0;right:0;bottom:0;background:#5a3a1a;color:#f3d98a;font-size:5.6pt;font-weight:700;padding:.7mm 0;line-height:1.25}
 .cardwrap{position:relative}.cardwrap .regen{margin-top:4px;width:48mm}
 @media print{@page{size:A4 portrait;margin:5mm}body.printcards .topnav,body.printcards .bg,body.printcards .cg,body.printcards header,body.printcards nav,body.printcards footer,body.printcards .noprint,body.printcards .tabbar,body.printcards #debugBanner,body.printcards .mobile-drawer,body.printcards .regen{display:none!important}body.printcards,body.printcards main{background:#fff!important;padding:0!important;margin:0!important;max-width:none!important}.cardsgrid{grid-template-columns:repeat(4,48mm);gap:2mm;justify-content:start;direction:ltr}.idcard{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.attopt.v-late:has(input:checked){background:#FBF1D4;border-color:#d98a00}.pill.late{background:#FBF1D4;color:#8A6410}
+.xbtn{border:1px solid var(--line,#ccc);background:transparent;color:inherit;border-radius:10px;padding:4px 10px;font-size:12.5px;cursor:pointer;margin-inline-start:6px}
+.tmgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 </style>
 <style id="glass-css">
 @media screen{
@@ -282,6 +286,7 @@ html[data-theme=classic] .bg,html[data-theme=classic] .cg,html[data-theme=classi
 @media print{.tabbar,.bg,.cg,.thwrap{display:none !important}}
 </style>
 <script>(function(){var t='midnight';try{t=localStorage.getItem('hud_theme')||'midnight'}catch(e){}if(['midnight','emerald','light','classic'].indexOf(t)<0)t='midnight';document.documentElement.setAttribute('data-theme',t);var s=document.getElementById('glass-css');if(s)s.media=t==='classic'?'not all':'all'})();</script>
+<link rel="manifest" id="appManifest" href="madrassa-manifest.webmanifest"><script>try{if(/[?&]app=staff/.test(location.search)){document.getElementById("appManifest").setAttribute("href","madrassa-staff-manifest.webmanifest");}}catch(e){}</script><meta name="theme-color" content="#0E332C"><link rel="apple-touch-icon" href="madrassa-icon-192.png"><link rel="icon" href="madrassa-icon-192.png"><meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 <div class="topnav">
@@ -338,7 +343,7 @@ en:{
   homeTitle:"Welcome",homeSub:"Prayer times, announcements, and community info.",
   heroEyebrow:"Assalamu Alaikum", heroLine:"A place of worship, learning, and community.",
   prayerTimes:"Prayer Times",announcements:"Announcements",editMode:"Editing enabled",
-  add:"Add",save:"Save",photoL:"Photo",photoPick:"Choose photo",photoRemove:"Remove photo",photoSaved:"Photo saved.",photoRemoved:"Photo removed.",photoBad:"Could not use this photo. Try another picture.",photoBulk:"Upload many photos at once",photoBulkHint:"Name each file with the roll number (for example 12.jpg). Photos are matched by roll number.",photoBulkDone:"Done: {ok} saved, {skip} skipped (no matching roll number).",photoNone:"No photo",photoBusy:"Uploading…",scanTitle:"Scan (IN / OUT)",scanStart:"Start camera",scanStop:"Stop camera",scanFlip:"Switch camera",scanIn:"IN — Arrived",scanOut:"OUT — Left",scanDup:"Already scanned a moment ago",scanAlreadyOut:"Already marked OUT today",scanBadQr:"This QR is not recognised.",scanDenied:"Not allowed for this student.",scanCamErr:"Could not open the camera. Allow camera permission (the site must be on HTTPS).",scanWait:"Show the card to the camera",scanToday:"Today",scanCIn:"In",scanCOut:"Out",scanInside:"Inside now",scanNoScans:"No scans yet today.",scanHelp:"Keep the phone on a stand. The student shows the QR on the ID card.",scanErr:"Could not record this scan. Try again.",inL:"IN",outL:"OUT",nav_scan:"Scan",cardsBtn:"Print ID cards (QR)",cardsTitle:"Student ID cards",cardsHelp:"Each card has a QR. Print on thick paper or PVC, cut and laminate. 12 cards per A4 page (vertical).",cardsPrint:"Print",cardsBack:"Back",cardsRegen:"New QR (lost card)",cardsRegenAsk:"The old card will stop working. Make a new QR for this student?",cardsLoading:"Loading…",cardsErr:"Could not load cards.",cardsClass:"Class",cardsAll:"All",cardsHost:"Jamia Masjid Hudabia",cancel:"Cancel",editBtn:"Edit",editStudent:"Edit Student",rollTaken:"This roll number is already used by another student.",badPhone:"Enter a valid mobile number (at least 7 digits) or leave it empty.",contactHelp:"The last 3 digits of this number are the parents' code to check attendance (roll-last 3 digits). If you change the roll or number, tell the parents.",saveFailed:"Could not save. Check the details and try again.",forMonthL:"For Month",monthsPaidL:"Months Paid",monthsDueL:"Months Due",allClear:"All months are paid. JazakAllah Khair!",noMonthly:"No monthly chanda receipts yet.",receiptNoL:"Receipt",remove:"Remove",
+  add:"Add",save:"Save",late:"Late",photoL:"Photo",photoPick:"Choose photo",photoRemove:"Remove photo",photoSaved:"Photo saved.",photoRemoved:"Photo removed.",photoBad:"Could not use this photo. Try another picture.",photoBulk:"Upload many photos at once",photoBulkHint:"Name each file with the roll number (for example 12.jpg). Photos are matched by roll number.",photoBulkDone:"Done: {ok} saved, {skip} skipped (no matching roll number).",photoNone:"No photo",photoBusy:"Uploading…",scanTitle:"Scan (IN / OUT)",scanStart:"Start camera",scanStop:"Stop camera",scanFlip:"Switch camera",scanIn:"IN — Arrived",scanOut:"OUT — Left",scanDup:"Already scanned a moment ago",scanAlreadyOut:"Already marked OUT today",scanBadQr:"This QR is not recognised.",scanDenied:"Not allowed for this student.",scanCamErr:"Could not open the camera. Allow camera permission (the site must be on HTTPS).",scanWait:"Show the card to the camera",scanToday:"Today",scanCIn:"In",scanCOut:"Out",scanInside:"Inside now",scanNoScans:"No scans yet today.",scanHelp:"Keep the phone on a stand. The student shows the QR on the ID card.",scanErr:"Could not record this scan. Try again.",inL:"IN",outL:"OUT",nav_scan:"Scan",cardsBtn:"Print ID cards (QR)",cardsTitle:"Student ID cards",cardsHelp:"Each card has a QR. Print on thick paper or PVC, cut and laminate. 12 cards per A4 page (vertical).",cardsPrint:"Print",cardsBack:"Back",cardsRegen:"New QR (lost card)",cardsRegenAsk:"The old card will stop working. Make a new QR for this student?",cardsLoading:"Loading…",cardsErr:"Could not load cards.",cardsClass:"Class",cardsAll:"All",cardsHost:"Jamia Masjid Hudabia",cancel:"Cancel",editBtn:"Edit",editStudent:"Edit Student",rollTaken:"This roll number is already used by another student.",badPhone:"Enter a valid mobile number (at least 7 digits) or leave it empty.",contactHelp:"The last 3 digits of this number are the parents' code to check attendance (roll-last 3 digits). If you change the roll or number, tell the parents.",saveFailed:"Could not save. Check the details and try again.",forMonthL:"For Month",monthsPaidL:"Months Paid",monthsDueL:"Months Due",allClear:"All months are paid. JazakAllah Khair!",noMonthly:"No monthly chanda receipts yet.",receiptNoL:"Receipt",remove:"Remove",
   madrissaTitle:"Madrissa",madrissaSub:"Classes offered and admission form.",
   classesOffered:"Classes Offered",applyAdmission:"Apply for Admission",
   studentName:"Student Name",fatherGuardian:"Father / Guardian Name",age:"Age",
@@ -398,7 +403,7 @@ ur:{
   homeTitle:"خوش آمدید",homeSub:"نماز کے اوقات، اعلانات اور کمیونٹی کی معلومات۔",
   heroEyebrow:"السلام علیکم", heroLine:"عبادت، تعلیم اور برادری کا مرکز۔",
   prayerTimes:"نماز کے اوقات",announcements:"اعلانات",editMode:"ترمیم فعال ہے",
-  add:"شامل کریں",save:"محفوظ کریں",photoL:"تصویر",photoPick:"تصویر منتخب کریں",photoRemove:"تصویر ہٹائیں",photoSaved:"تصویر محفوظ ہو گئی۔",photoRemoved:"تصویر ہٹا دی گئی۔",photoBad:"یہ تصویر استعمال نہیں ہو سکی۔ کوئی اور تصویر آزمائیں۔",photoBulk:"ایک ساتھ کئی تصویریں اپ لوڈ کریں",photoBulkHint:"ہر فائل کا نام رول نمبر ہو (مثلاً 12.jpg)۔ تصویریں رول نمبر سے ملائی جاتی ہیں۔",photoBulkDone:"مکمل: {ok} محفوظ، {skip} چھوڑی گئیں (رول نمبر نہیں ملا)۔",photoNone:"تصویر نہیں",photoBusy:"اپ لوڈ ہو رہی ہے…",scanTitle:"اسکین (آمد / چھٹی)",scanStart:"کیمرہ چلائیں",scanStop:"کیمرہ بند کریں",scanFlip:"کیمرہ بدلیں",scanIn:"آمد (IN)",scanOut:"چھٹی (OUT)",scanDup:"ابھی ابھی اسکین ہو چکا",scanAlreadyOut:"آج چھٹی پہلے ہی لگ چکی",scanBadQr:"یہ QR پہچانا نہیں گیا۔",scanDenied:"اس طالب علم کی اجازت نہیں۔",scanCamErr:"کیمرہ نہیں کھل سکا۔ کیمرے کی اجازت دیں (سائٹ HTTPS پر ہونی چاہیے)۔",scanWait:"کارڈ کیمرے کے سامنے کریں",scanToday:"آج",scanCIn:"آمد",scanCOut:"چھٹی",scanInside:"اندر موجود",scanNoScans:"آج ابھی کوئی اسکین نہیں۔",scanHelp:"فون اسٹینڈ پر رکھیں۔ طالب علم شناختی کارڈ کا QR دکھائے۔",scanErr:"یہ اسکین محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",inL:"آمد",outL:"چھٹی",nav_scan:"اسکین",cardsBtn:"شناختی کارڈ پرنٹ کریں (QR)",cardsTitle:"طلبہ کے شناختی کارڈ",cardsHelp:"ہر کارڈ پر QR ہے۔ موٹے کاغذ یا PVC پر پرنٹ کریں، کاٹیں اور لیمینیٹ کریں۔ ایک A4 پر 12 کارڈ (عمودی)۔",cardsPrint:"پرنٹ",cardsBack:"واپس",cardsRegen:"نیا QR (کارڈ گم)",cardsRegenAsk:"پرانا کارڈ کام کرنا چھوڑ دے گا۔ اس طالب علم کا نیا QR بنائیں؟",cardsLoading:"لوڈ ہو رہا ہے…",cardsErr:"کارڈ لوڈ نہیں ہو سکے۔",cardsClass:"کلاس",cardsAll:"سب",cardsHost:"جامع مسجد حدیبیہ",cancel:"منسوخ",editBtn:"ترمیم",editStudent:"طالب علم کی ترمیم",rollTaken:"یہ رول نمبر کسی دوسرے طالب علم کے پاس ہے۔",badPhone:"درست موبائل نمبر درج کریں (کم از کم 7 ہندسے) یا خالی چھوڑ دیں۔",contactHelp:"اس نمبر کے آخری 3 ہندسے والدین کا حاضری چیک کرنے کا کوڈ ہیں (رول نمبر-آخری 3 ہندسے)۔ رول یا نمبر بدلیں تو والدین کو بتا دیں۔",saveFailed:"محفوظ نہیں ہو سکا۔ تفصیل چیک کر کے دوبارہ کوشش کریں۔",forMonthL:"مہینہ",monthsPaidL:"ادا شدہ مہینے",monthsDueL:"باقی مہینے",allClear:"تمام مہینے ادا ہیں۔ جزاک اللہ خیر!",noMonthly:"ابھی تک ماہانہ چندے کی کوئی رسید نہیں۔",receiptNoL:"رسید",remove:"ہٹائیں",
+  add:"شامل کریں",save:"محفوظ کریں",late:"تاخیر",photoL:"تصویر",photoPick:"تصویر منتخب کریں",photoRemove:"تصویر ہٹائیں",photoSaved:"تصویر محفوظ ہو گئی۔",photoRemoved:"تصویر ہٹا دی گئی۔",photoBad:"یہ تصویر استعمال نہیں ہو سکی۔ کوئی اور تصویر آزمائیں۔",photoBulk:"ایک ساتھ کئی تصویریں اپ لوڈ کریں",photoBulkHint:"ہر فائل کا نام رول نمبر ہو (مثلاً 12.jpg)۔ تصویریں رول نمبر سے ملائی جاتی ہیں۔",photoBulkDone:"مکمل: {ok} محفوظ، {skip} چھوڑی گئیں (رول نمبر نہیں ملا)۔",photoNone:"تصویر نہیں",photoBusy:"اپ لوڈ ہو رہی ہے…",scanTitle:"اسکین (آمد / چھٹی)",scanStart:"کیمرہ چلائیں",scanStop:"کیمرہ بند کریں",scanFlip:"کیمرہ بدلیں",scanIn:"آمد (IN)",scanOut:"چھٹی (OUT)",scanDup:"ابھی ابھی اسکین ہو چکا",scanAlreadyOut:"آج چھٹی پہلے ہی لگ چکی",scanBadQr:"یہ QR پہچانا نہیں گیا۔",scanDenied:"اس طالب علم کی اجازت نہیں۔",scanCamErr:"کیمرہ نہیں کھل سکا۔ کیمرے کی اجازت دیں (سائٹ HTTPS پر ہونی چاہیے)۔",scanWait:"کارڈ کیمرے کے سامنے کریں",scanToday:"آج",scanCIn:"آمد",scanCOut:"چھٹی",scanInside:"اندر موجود",scanNoScans:"آج ابھی کوئی اسکین نہیں۔",scanHelp:"فون اسٹینڈ پر رکھیں۔ طالب علم شناختی کارڈ کا QR دکھائے۔",scanErr:"یہ اسکین محفوظ نہیں ہو سکا۔ دوبارہ کوشش کریں۔",inL:"آمد",outL:"چھٹی",nav_scan:"اسکین",cardsBtn:"شناختی کارڈ پرنٹ کریں (QR)",cardsTitle:"طلبہ کے شناختی کارڈ",cardsHelp:"ہر کارڈ پر QR ہے۔ موٹے کاغذ یا PVC پر پرنٹ کریں، کاٹیں اور لیمینیٹ کریں۔ ایک A4 پر 12 کارڈ (عمودی)۔",cardsPrint:"پرنٹ",cardsBack:"واپس",cardsRegen:"نیا QR (کارڈ گم)",cardsRegenAsk:"پرانا کارڈ کام کرنا چھوڑ دے گا۔ اس طالب علم کا نیا QR بنائیں؟",cardsLoading:"لوڈ ہو رہا ہے…",cardsErr:"کارڈ لوڈ نہیں ہو سکے۔",cardsClass:"کلاس",cardsAll:"سب",cardsHost:"جامع مسجد حدیبیہ",cancel:"منسوخ",editBtn:"ترمیم",editStudent:"طالب علم کی ترمیم",rollTaken:"یہ رول نمبر کسی دوسرے طالب علم کے پاس ہے۔",badPhone:"درست موبائل نمبر درج کریں (کم از کم 7 ہندسے) یا خالی چھوڑ دیں۔",contactHelp:"اس نمبر کے آخری 3 ہندسے والدین کا حاضری چیک کرنے کا کوڈ ہیں (رول نمبر-آخری 3 ہندسے)۔ رول یا نمبر بدلیں تو والدین کو بتا دیں۔",saveFailed:"محفوظ نہیں ہو سکا۔ تفصیل چیک کر کے دوبارہ کوشش کریں۔",forMonthL:"مہینہ",monthsPaidL:"ادا شدہ مہینے",monthsDueL:"باقی مہینے",allClear:"تمام مہینے ادا ہیں۔ جزاک اللہ خیر!",noMonthly:"ابھی تک ماہانہ چندے کی کوئی رسید نہیں۔",receiptNoL:"رسید",remove:"ہٹائیں",
   madrissaTitle:"مدرسہ",madrissaSub:"دستیاب جماعتیں اور داخلہ فارم۔",
   classesOffered:"دستیاب جماعتیں",applyAdmission:"داخلہ فارم",
   studentName:"طالب علم کا نام",fatherGuardian:"والد / سرپرست کا نام",age:"عمر",
@@ -879,7 +884,7 @@ function reportCardsHTML(reports, mode){
 function studentCardHTML(match, mode){
   const L = DR();
   const records = (match.attendance||[]).slice().sort((a,b)=> a.date<b.date?1:-1);
-  const presentCount = records.filter(r=>r.status==='present').length;
+  const presentCount = records.filter(r=>r.status==='present'||r.status==='late').length;
   const absentCount = records.filter(r=>r.status==='absent').length;
   const leaveCount = records.filter(r=>r.status==='leave').length;
   const denom = presentCount + absentCount;
@@ -919,17 +924,85 @@ function renderPrivateReport(){
 }
 let selectedAttDate = null, attClass = '';
 
+// ===================== NEW: labels, modal, timings, admins =====================
+const STAFF_APP = /[?&]app=staff/.test(location.search);
+const XE = {loginNav:'Staff Login',dash:'Dashboard',cancel:'Cancel',save:'Save',admins:'Admins',addAdmin:'Add admin',adminsNote:'All admins have full access. You cannot delete or stop your own account.',uname:'Username (letters, numbers, . _)',dname:'Display name',pw:'Password (min 8 characters)',create:'Create',edit:'Edit',resetPw:'Reset password',del:'Delete',delAsk:'Delete this admin account? This cannot be undone.',active:'Account active',myLogin:'My login',myLoginTitle:'Change my username / password',myLoginNote:'Leave a field empty to keep it the same.',newUser:'New username',newPw:'New password (min 8 characters)',saved:'Saved.',you:'(you)',stopped:'Stopped',activeS:'Active',
+  timings:'School timings',startT:'School start time',lateT:'Late after',absentT:'Absent after',outT:'Chhutti (OUT) allowed from',timesNote:'Arrival up to "Late after" = Present, then Late, and after "Absent after" = Absent. Leave a time empty to turn it off. A second scan before the chhutti time is ignored. You can change the status of any student by hand.',editTimes:'Edit times',inT:'IN time',outT2:'OUT time',clearNote:'Leave empty to remove that time.',alreadyIn:'Already marked IN. OUT works after chhutti time.',inLate:'IN — Late',inAbsent:'IN — too late (Absent)',
+  err:{cannot_disable_self:'You cannot stop your own account.',cannot_delete_self:'You cannot delete your own account.',username_taken:'This username is already used.',invalid_username:'Username must be 3–30 letters, numbers, . or _',weak_password:'Password must be 8–72 characters and not the same as the username.',too_many_accounts:'Account limit (16) reached.',forbidden:'Not allowed.',not_found:'Not found.',invalid_time:'Enter a valid time.',invalid_order:'Times are in the wrong order.',out_needs_in:'Enter the IN time first.',unauthorized:'Wrong username or password.',invalid_input:'Invalid input.'}};
+const XU = {loginNav:'اسٹاف لاگ ان',dash:'ڈیش بورڈ',cancel:'منسوخ',save:'محفوظ کریں',admins:'ایڈمن',addAdmin:'ایڈمن شامل کریں',adminsNote:'تمام ایڈمن کو مکمل اختیار ہے۔ آپ اپنا اکاؤنٹ بند یا ڈیلیٹ نہیں کر سکتے۔',uname:'یوزر نیم (حروف، ہندسے، . _)',dname:'نام',pw:'پاس ورڈ (کم از کم 8 حروف)',create:'بنائیں',edit:'ترمیم',resetPw:'پاس ورڈ ری سیٹ',del:'ڈیلیٹ',delAsk:'یہ ایڈمن اکاؤنٹ ڈیلیٹ کریں؟ یہ واپس نہیں ہو سکتا۔',active:'اکاؤنٹ فعال',myLogin:'میرا لاگ ان',myLoginTitle:'میرا یوزر نیم / پاس ورڈ تبدیل کریں',myLoginNote:'جو خانہ خالی چھوڑیں گے وہ وہی رہے گا۔',newUser:'نیا یوزر نیم',newPw:'نیا پاس ورڈ (کم از کم 8 حروف)',saved:'محفوظ ہو گیا۔',you:'(آپ)',stopped:'بند',activeS:'فعال',
+  timings:'اسکول کے اوقات',startT:'اسکول شروع ہونے کا وقت',lateT:'اس کے بعد تاخیر',absentT:'اس کے بعد غیر حاضر',outT:'چھٹی (OUT) کب سے',timesNote:'"تاخیر" کے وقت تک آنے والا حاضر، پھر تاخیر، اور "غیر حاضر" کے وقت کے بعد غیر حاضر۔ کوئی وقت خالی چھوڑیں تو وہ شرط بند۔ چھٹی کے وقت سے پہلے دوسرا اسکین نظر انداز ہوتا ہے۔ کسی بھی بچے کی حاضری ہاتھ سے بدل سکتے ہیں۔',editTimes:'اوقات بدلیں',inT:'آمد کا وقت',outT2:'چھٹی کا وقت',clearNote:'وقت ہٹانے کے لیے خالی چھوڑیں۔',alreadyIn:'آمد پہلے ہی لگ چکی۔ چھٹی کے وقت کے بعد OUT ہوگا۔',inLate:'آمد — تاخیر',inAbsent:'آمد — بہت دیر (غیر حاضر)',
+  err:{cannot_disable_self:'آپ اپنا اکاؤنٹ بند نہیں کر سکتے۔',cannot_delete_self:'آپ اپنا اکاؤنٹ ڈیلیٹ نہیں کر سکتے۔',username_taken:'یہ یوزر نیم پہلے سے استعمال میں ہے۔',invalid_username:'یوزر نیم 3 سے 30 حروف/ہندسے، . یا _ ہو۔',weak_password:'پاس ورڈ 8 سے 72 حروف کا ہو اور یوزر نیم جیسا نہ ہو۔',too_many_accounts:'اکاؤنٹس کی حد (16) پوری ہو گئی۔',forbidden:'اجازت نہیں۔',not_found:'نہیں ملا۔',invalid_time:'درست وقت لکھیں۔',invalid_order:'اوقات کی ترتیب غلط ہے۔',out_needs_in:'پہلے آمد کا وقت لکھیں۔',unauthorized:'یوزر نیم یا پاس ورڈ غلط ہے۔',invalid_input:'غلط معلومات۔'}};
+function XL(){ return lang==='ur' ? XU : XE; }
+function xErr(e){ const m=String((e&&e.message)||e); const L=XL().err; for(const k in L){ if(m.includes(k)) return L[k]; } return m; }
+function xModal(o){
+  const L=XL(); const d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px';
+  d.setAttribute('dir', lang==='ur'?'rtl':'ltr');
+  d.innerHTML=`<div class="card" style="max-width:440px;width:100%;margin:0;max-height:92vh;overflow:auto"><h3 style="margin-top:0">${esc(o.title)}</h3>${o.note?`<p style="font-size:13px;color:var(--muted)">${esc(o.note)}</p>`:''}<form novalidate autocomplete="off">${o.fields.map(f=>f.type==='checkbox'?`<label class="chk" style="margin-top:10px;"><input type="checkbox" name="${f.name}" ${f.value?'checked':''}> ${esc(f.label)}</label>`:`<label>${esc(f.label)}</label><input name="${f.name}" type="${f.type||'text'}" value="${esc(f.value||'')}" autocomplete="off" autocapitalize="none" ${f.max?`maxlength="${f.max}"`:''}>`).join('')}<div class="dr-msg err" id="xmErr"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="submit" style="margin:0">${esc(o.ok||L.save)}</button><button class="btn secondary small" type="button" id="xmX" style="margin:0">${L.cancel}</button></div></form></div>`;
+  document.body.appendChild(d);
+  const close=()=>d.remove(); d.querySelector('#xmX').onclick=close;
+  d.querySelector('form').onsubmit=async e=>{ e.preventDefault(); const f=new FormData(e.target), v={}; o.fields.forEach(x=>{ v[x.name]= x.type==='checkbox' ? f.get(x.name)==='on' : String(f.get(x.name)||'').trim(); }); const er=d.querySelector('#xmErr'); er.textContent=''; try{ await o.onOk(v); close(); }catch(ex){ er.textContent=xErr(ex); } };
+  const first=d.querySelector('input:not([type=checkbox])'); if(first) first.focus();
+}
+let attCfg = null;
+async function loadAttSettings(){
+  try{ const {data,error}=await sb.rpc('get_att_settings',{p_username:adminUser,p_password:adminPass}); if(error) throw error; attCfg=(data&&data[0])||null; if(page==='scan'){ const b=el('attCfgBox'); if(b) b.innerHTML=attCfgHTML(); bindCfg(); } }catch(e){ console.error('cfg',e); }
+}
+function attCfgHTML(){
+  const L=XL(), c=attCfg||{start_time:'08:15',late_after:'',absent_after:'',out_from:''};
+  return `<h3 style="margin-top:0">${L.timings}</h3><p style="font-size:12.5px;color:var(--muted);margin:0 0 10px;">${L.timesNote}</p>
+  <div class="tmgrid"><div><label>${L.startT}</label><input type="time" id="cfgStart" value="${esc(c.start_time)}"></div><div><label>${L.lateT}</label><input type="time" id="cfgLate" value="${esc(c.late_after)}"></div><div><label>${L.absentT}</label><input type="time" id="cfgAbs" value="${esc(c.absent_after)}"></div><div><label>${L.outT}</label><input type="time" id="cfgOut" value="${esc(c.out_from)}"></div></div>
+  <div style="margin-top:10px;"><button class="btn small" id="cfgSave" style="margin:0;">${L.save}</button> <span id="cfgMsg" style="font-size:13px;"></span></div>`;
+}
+function bindCfg(){
+  const b=el('cfgSave'); if(!b) return;
+  b.onclick=async()=>{ const m=el('cfgMsg'); m.style.color='var(--muted)'; m.textContent='…';
+    try{ const {error}=await sb.rpc('set_att_settings',{p_username:adminUser,p_password:adminPass,p_start:el('cfgStart').value,p_late:el('cfgLate').value,p_absent:el('cfgAbs').value,p_out:el('cfgOut').value}); if(error) throw error; await loadAttSettings(); const m2=el('cfgMsg'); if(m2){ m2.style.color='var(--ok)'; m2.textContent=XL().saved; } }
+    catch(e){ m.style.color='var(--bad)'; m.textContent=xErr(e); } };
+}
+function hmOf(ts){ try{ return new Date(ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Karachi'}); }catch(e){ return ''; } }
+function editScanTimes(sid){
+  const L=XL(), st=students.find(x=>x.id===sid); if(!st) return; const curDate=selectedAttDate||todayInPakistan(); const o=scanLog[sid]||{};
+  xModal({title:`${L.editTimes}: ${nmOf(st)}`, note:L.clearNote, fields:[{name:'i',label:L.inT,type:'time',value:o.in?hmOf(o.in):''},{name:'o',label:L.outT2,type:'time',value:o.out?hmOf(o.out):''}],
+    onOk: async v=>{ const {error}=await sb.rpc('admin_edit_scan',{p_username:adminUser,p_password:adminPass,p_student_id:sid,p_date:curDate,p_in:v.i,p_out:v.o}); if(error) throw error; await loadScanLog(curDate); }});
+}
+function changeMyLogin(){
+  const L=XL();
+  xModal({title:L.myLoginTitle, note:L.myLoginNote, fields:[{name:'nu',label:L.newUser,value:''},{name:'np',label:L.newPw,type:'password'}],
+    onOk: async v=>{ if(!v.nu && !v.np) return; const {data,error}=await sb.rpc('change_credentials',{p_username:adminUser,p_password:adminPass,p_new_username:v.nu,p_new_password:v.np}); if(error) throw error; if(data) adminUser=data; if(v.np) adminPass=v.np; await loadWho(); render(); }});
+}
+function adminsCardHTML(){
+  const L=XL(), list=accounts.filter(a=>a.role==='admin');
+  return `<div class="card"><h3>${L.admins}</h3><p class="note" style="font-size:12.5px;color:var(--muted);margin-top:0;">${L.adminsNote}</p>
+  <div class="tablewrap"><table>${list.map(a=>`<tr><td><b>${esc(a.username)}</b> ${a.username===adminUser?`<span class="note">${L.you}</span>`:''}<div>${a.active?`<span class="rchip ok">${L.activeS}</span>`:`<span class="rchip bad">${L.stopped}</span>`}</div></td><td>${esc(a.display_name||'')}</td><td style="white-space:nowrap;"><button class="xbtn admEdit" data-u="${esc(a.username)}">${L.edit}</button><button class="xbtn admPw" data-u="${esc(a.username)}">${L.resetPw}</button>${a.username!==adminUser?`<button class="xbtn admDel" data-u="${esc(a.username)}">${L.del}</button>`:''}</td></tr>`).join('')}</table></div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;"><button class="btn small" id="admAdd" style="margin:0;">${L.addAdmin}</button><button class="btn secondary small" id="admMine" style="margin:0;">${L.myLogin}</button></div></div>`;
+}
+async function reloadTeam(){ await loadAccounts(); await loadActivity(true); render(); }
+function bindAdminsEvents(){
+  const L=XL();
+  const add=el('admAdd'); if(add) add.onclick=()=>xModal({title:L.addAdmin, fields:[{name:'u',label:L.uname,max:30},{name:'d',label:L.dname,max:60},{name:'p',label:L.pw,max:72}],
+    onOk: async v=>{ const {error}=await sb.rpc('create_admin',{p_username:adminUser,p_password:adminPass,p_new_username:v.u,p_new_password:v.p,p_display_name:v.d}); if(error) throw error; await reloadTeam(); }});
+  const mine=el('admMine'); if(mine) mine.onclick=changeMyLogin;
+  document.querySelectorAll('.admEdit').forEach(b=> b.onclick=()=>{ const a=accounts.find(x=>x.username===b.dataset.u); if(!a) return;
+    xModal({title:`${L.edit}: ${a.username}`, fields:[{name:'d',label:L.dname,value:a.display_name||'',max:60},{name:'a',label:L.active,type:'checkbox',value:a.active}],
+      onOk: async v=>{ const {error}=await sb.rpc('update_admin',{p_username:adminUser,p_password:adminPass,p_target:a.username,p_display_name:v.d,p_active:v.a}); if(error) throw error; await reloadTeam(); }}); });
+  document.querySelectorAll('.admPw').forEach(b=> b.onclick=()=>{ const u=b.dataset.u;
+    xModal({title:`${L.resetPw}: ${u}`, fields:[{name:'p',label:L.pw,max:72}],
+      onOk: async v=>{ const {error}=await sb.rpc('reset_admin_password',{p_username:adminUser,p_password:adminPass,p_target:u,p_new_password:v.p}); if(error) throw error; if(u===adminUser) adminPass=v.p; await reloadTeam(); }}); });
+  document.querySelectorAll('.admDel').forEach(b=> b.onclick=async()=>{ if(!confirm(L.delAsk)) return; try{ const {error}=await sb.rpc('delete_admin',{p_username:adminUser,p_password:adminPass,p_target:b.dataset.u}); if(error) throw error; await reloadTeam(); }catch(e){ alert(xErr(e)); } });
+}
+
 // ===================== SCAN (IN / OUT with QR) =====================
-let scanLog = {};
+let scanLog = {}, scanLogDate = '';
 const scanState = {on:false, stream:null, timer:0, facing:'environment', last:{tok:'',t:0}, busy:false, result:null, det:null, canvas:null, flash:'', actx:null};
 function fmtT(ts){ try{ return new Date(ts).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'Asia/Karachi'}); }catch(e){ return ''; } }
 function scanChips(x){ return (x.in?`${t().inL} ${fmtT(x.in)}`:'') + (x.in&&x.out?' · ':'') + (x.out?`${t().outL} ${fmtT(x.out)}`:''); }
-async function loadScanLog(){
+async function loadScanLog(d){
   try{
-    const {data, error} = await sb.rpc('get_scan_log', {p_username:adminUser, p_password:adminPass, p_date:todayInPakistan()});
+    const useD = (userRole==='admin' && d) ? d : todayInPakistan();
+    const {data, error} = await sb.rpc('get_scan_log', {p_username:adminUser, p_password:adminPass, p_date:useD}); scanLogDate = useD;
     if(error) throw error;
     scanLog = {}; (data||[]).forEach(r=>{ const o = scanLog[r.student_id] || (scanLog[r.student_id]={in:null,out:null,last:null}); if(r.kind==='in' && !o.in) o.in=r.at; if(r.kind==='out') o.out=r.at; o.last=r.at; });
-    if(page==='attendance') render(); else if(page==='scan') refreshScanLists();
+    if(page==='attendance') render(); else if(page==='scan' && useD===todayInPakistan()) refreshScanLists();
   }catch(e){ console.error('scanlog', e); }
 }
 function beep(kind){
@@ -945,8 +1018,8 @@ function scanResultHTML(){
   if(!r) return `<div class="card" style="text-align:center;color:var(--muted);">${scanState.flash?`<div style="color:var(--bad);font-weight:700;">${esc(scanState.flash)}</div>`:t().scanWait}</div>`;
   if(r.error) return `<div class="card" style="text-align:center;border-color:var(--bad);color:var(--bad);font-weight:700;font-size:18px;">${esc(r.error)}</div>`;
   const st = {id:r.student_id, name:r.name, name_ur:r.name_ur, roll:r.roll, cls:r.cls};
-  const isIn = r.kind==='in', col = r.result==='duplicate' || r.result==='already_out' ? '#8a8f98' : (isIn ? '#1f9d55' : '#e08a1e');
-  const label = r.result==='duplicate' ? t().scanDup : r.result==='already_out' ? t().scanAlreadyOut : (isIn ? t().scanIn : t().scanOut);
+  const isIn = r.kind==='in', quiet = ['duplicate','already_out','already_in'].includes(r.result), col = quiet ? '#8a8f98' : (isIn ? (r.status==='late' ? '#d98a00' : r.status==='absent' ? '#c0392b' : '#1f9d55') : '#e08a1e');
+  const label = r.result==='duplicate' ? t().scanDup : r.result==='already_out' ? t().scanAlreadyOut : r.result==='already_in' ? XL().alreadyIn : (isIn ? (r.status==='late' ? XL().inLate : r.status==='absent' ? XL().inAbsent : t().scanIn) : t().scanOut);
   const ph = r.photo ? `<img class="stph big" src="${r.photo}" alt="" style="width:150px;height:190px;margin:0 auto;display:block;">` : `<div class="stph ph big" style="width:150px;height:190px;margin:0 auto;font-size:56px;">${esc(Array.from(nmOf(st)||'?')[0]||'?')}</div>`;
   return `<div class="card" style="text-align:center;border:3px solid ${col};">${ph}<div style="font-size:26px;font-weight:800;margin-top:10px;">${esc(nmOf(st))}</div><div style="color:var(--muted);margin-top:2px;">#${esc(r.roll)} · ${esc(clsLbl(r.cls))}</div><div style="margin-top:10px;display:inline-block;padding:8px 18px;border-radius:999px;background:${col};color:#fff;font-weight:800;font-size:18px;">${esc(label)}</div><div style="margin-top:8px;font-size:20px;font-weight:700;">${esc(fmtT(r.at))}</div></div>`;
 }
@@ -960,7 +1033,7 @@ function renderScanPage(){
   return `<h2 class="page-title">${t().scanTitle}</h2><p class="page-sub">${t().scanHelp}</p>
   <div class="card"><div style="position:relative;max-width:420px;margin:0 auto;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4;"><video id="scanVideo" playsinline muted style="width:100%;height:100%;object-fit:cover;display:block;"></video><div style="position:absolute;inset:18%;border:3px solid rgba(232,200,114,.9);border-radius:18px;pointer-events:none;"></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;"><button class="btn" id="scanToggle" style="margin:0;">${scanState.on?t().scanStop:t().scanStart}</button><button class="btn secondary" id="scanFlip" style="margin:0;">${t().scanFlip}</button></div></div>
-  <div id="scanResult">${scanResultHTML()}</div><div class="section-heading">${t().scanToday}</div><div id="scanList">${scanListHTML()}</div>`;
+  <div id="scanResult">${scanResultHTML()}</div>${userRole==='admin' ? `<div class="card" id="attCfgBox">${attCfgHTML()}</div>` : ''}<div class="section-heading">${t().scanToday}</div><div id="scanList">${scanListHTML()}</div>`;
 }
 function refreshScanLists(){ const a=el('scanResult'), b=el('scanList'); if(a) a.innerHTML = scanResultHTML(); if(b) b.innerHTML = scanListHTML(); }
 function loadJsQR(){
@@ -1019,7 +1092,7 @@ async function doScan(tok){
     scanState.result = r;
     if(r.result==='in' || r.result==='out'){
       const o = scanLog[r.student_id] || (scanLog[r.student_id]={in:null,out:null,last:null});
-      if(r.result==='in'){ if(!o.in) o.in=r.at; const d=todayInPakistan(); if(!attendance[d]) attendance[d]={}; attendance[d][r.student_id]='present'; } else o.out=r.at; o.last=r.at;
+      if(r.result==='in'){ if(!o.in) o.in=r.at; const d=todayInPakistan(); if(!attendance[d]) attendance[d]={}; attendance[d][r.student_id]=r.status||'present'; } else o.out=r.at; o.last=r.at;
       beep(r.result);
     } else beep(r.result==='duplicate' ? 'in' : 'bad');
   }catch(e){
@@ -1029,7 +1102,7 @@ async function doScan(tok){
   scanState.busy = false; refreshScanLists();
 }
 function bindScanEvents(){
-  attachVideo();
+  attachVideo(); if(userRole==='admin'){ if(!attCfg) loadAttSettings(); bindCfg(); }
   const tg = el('scanToggle'); if(tg) tg.onclick = ()=>{ if(scanState.on){ stopScan(); tg.textContent=t().scanStart; } else startScan(); };
   const fl = el('scanFlip'); if(fl) fl.onclick = ()=>{ scanState.facing = scanState.facing==='environment' ? 'user' : 'environment'; const was=scanState.on; stopScan(); if(was) startScan(); };
 }
@@ -1049,8 +1122,9 @@ function renderCards(){
   const classes = [...new Set((cardData||[]).map(c=>c.cls))];
   const cards = list.map(c=>{
     const st = {id:c.student_id, name:c.name, name_ur:c.name_ur, roll:c.roll, cls:c.cls};
+    const full = students.find(x=>x.id===c.student_id); const gd = full ? gdOf(full) : '';
     const ph = c.photo ? `<img class="cp" src="${c.photo}" alt="">` : `<div class="cp">${esc(Array.from(nmOf(st)||'?')[0]||'?')}</div>`;
-    return `<div class="cardwrap"><div class="idcard"><div class="hd"><img class="e" src="${CARD_EMB}" alt=""><img class="u" src="${CARD_URDU}" alt=""></div><div class="band">JAMIA MASJID HUDABIA</div>${ph}<div class="cn">${esc(nmOf(st))}</div><div class="cm">${esc(clsLbl(c.cls))} · ID ${esc(c.roll)}</div><div class="cq" data-qr="HUDS:${esc(c.token)}"></div><div class="ft">03225600912</div></div><button class="btn secondary small regen" data-sid="${esc(c.student_id)}">${t().cardsRegen}</button></div>`;
+    return `<div class="cardwrap"><div class="idcard"><div class="hd"><img class="e" src="${CARD_EMB}" alt=""><img class="u" src="${CARD_URDU}" alt=""></div><div class="band">JAMIA MASJID HUDABIA</div>${ph}<div class="cn">${esc(nmOf(st))}</div>${gd?`<div class="gd">${lang==='ur'?'ولد':'S/O'} ${esc(gd)}</div>`:''}<div class="cm">${esc(clsLbl(c.cls))} · ID ${esc(c.roll)}</div><div class="cq" data-qr="HUDS:${esc(c.token)}"></div><div class="ft"><div>jamiahudabia.github.io</div><div>03225600912</div></div></div><button class="btn secondary small regen" data-sid="${esc(c.student_id)}">${t().cardsRegen}</button></div>`;
   }).join('');
   return `<div class="noprint"><h2 class="page-title">${t().cardsTitle}</h2><p class="page-sub">${t().cardsHelp}</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;"><button class="btn secondary" id="cardsBack" style="margin:0;">${t().cardsBack}</button><select id="cardsCls" style="max-width:200px;"><option value="">${t().cardsClass}: ${t().cardsAll}</option>${classes.map(c=>`<option value="${esc(c)}" ${c===cardCls?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select><button class="btn" id="cardsPrint" style="margin:0;">${t().cardsPrint} (${list.length})</button></div>${cardErr?`<div class="card" style="color:var(--bad);">${esc(cardErr)}</div>`:''}${(cardData===null&&!cardErr)?`<div class="card">${t().cardsLoading}</div>`:''}</div><div class="cardsgrid">${cards}</div>`;
@@ -1125,9 +1199,9 @@ function renderAttendanceForm(){
       <div><label>${t().classFilterL}</label><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
       <div><button class="btn small" id="presentAllBtn" style="margin:0;">${t().presentAll} (${list.length})</button></div>
     </div>
-    <div class="tablewrap"><table class="att-table"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().absent} / ${t().leave}</th></tr>${list.map(s=>`
+    <div class="tablewrap"><table class="att-table"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().late} / ${t().absent} / ${t().leave}</th></tr>${list.map(s=>`
     <tr><td class="roll">#${esc(s.roll)}</td><td style="white-space:nowrap;">${avatar(s)}<span style="white-space:normal;display:inline-block;vertical-align:middle;">${esc(nmOf(s))}${gdOf(s)?`<span class="guard">${t().fatherGuardian}: ${esc(gdOf(s))}</span>`:''}</span></td><td>
-      <div class="attgrp">${radio(s,'present')}${radio(s,'absent')}${radio(s,'leave')}</div>${(curDate===today && scanLog[s.id]) ? `<span class="guard">${scanChips(scanLog[s.id])}</span>` : ''}${attBy[curDate+'|'+s.id] ? `<span class="guard">${t().markedBy}: ${esc(staffName(attBy[curDate+'|'+s.id]))}</span>` : ''}
+      <div class="attgrp">${radio(s,'present')}${radio(s,'late')}${radio(s,'absent')}${radio(s,'leave')}</div>${(scanLogDate===curDate && scanLog[s.id]) ? `<span class="guard">${scanChips(scanLog[s.id])}</span>` : ''}${(userRole==='admin') ? `<button class="xbtn scanEdit" data-sid="${esc(s.id)}" style="margin:4px 0 0;">✎ ${XL().editTimes}</button>` : ''}${attBy[curDate+'|'+s.id] ? `<span class="guard">${t().markedBy}: ${esc(staffName(attBy[curDate+'|'+s.id]))}</span>` : ''}
     </td></tr>`).join('')}</table></div>`;
 }
 
@@ -1140,7 +1214,7 @@ function renderMonthlyAttendance(){
     Object.keys(attendance).forEach(d=>{
       if(d.slice(0,7)===curMonth && attendance[d][s.id]){
         const v=attendance[d][s.id];
-        if(v==='present') present++; else if(v==='leave') leave++; else absent++;
+        if(v==='present'||v==='late') present++; else if(v==='leave') leave++; else absent++;
       }
     });
     const totalD = present+absent;
@@ -1219,6 +1293,8 @@ const canAtt = ()=> adminOK && (userRole==='admin' || (userInfo && userInfo.perm
 const canRep = ()=> adminOK && (userRole==='admin' || (userInfo && userInfo.perm_reports));
 function staffName(u){ const a=accounts.find(x=>x.username===u); return a ? (a.display_name||a.username) : (userInfo && u===adminUser && userInfo.display_name ? userInfo.display_name : (u||'')); }
 function navItems(){
+  if(STAFF_APP && !adminOK) return [['admin',XL().loginNav,'home']];
+  if(STAFF_APP && adminOK && !isTeacher()) return [['admin',XL().dash,'home'],['madrissa',t().nav.madrissa,'madrissa'],['reports',t().nav.reports,'reports'],['team',t().nav.team,'team'],['scan',t().nav.scan,'scan']];
   if(isTeacher()){
     const it=[]; if(canAtt()) it.push(['attendance',t().nav.attendance,'attendance']); if(canAtt()) it.push(['scan',t().nav.scan,'scan']); if(canRep()) it.push(['reports',t().nav.reports,'reports']); return it;
   }
@@ -1246,14 +1322,14 @@ async function loadActivity(reset){
 }
 function doLogout(){
   cardData=null; cardCls=''; document.body.classList.remove('printcards'); stopScan(); scanLog={}; scanState.result=null; photos={}; adminOK=false; adminUser=null; adminPass=null; userRole=null; userInfo=null; accounts=[]; attBy={}; activity=[]; teamLoaded=false; editingTeacher=null;
-  editingStudent=-1; reportsByDate={}; reportsLoadedKey=null; reportTeacher=null; reportWarn=[]; selectedAttDate=null; page='home'; renderNav(); render();
+  editingStudent=-1; reportsByDate={}; reportsLoadedKey=null; reportTeacher=null; reportWarn=[]; selectedAttDate=null; page=STAFF_APP?'admin':'home'; renderNav(); render();
 }
 function renderStaffBar(){
   if(!isTeacher()) return '';
   const L=TL(), nm=(userInfo&&userInfo.display_name)||adminUser;
   return `<div class="card staffbar" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:12px 16px;">
     <div><b>${esc(nm)}</b> <span class="rchip ok">${L.teacherRole}</span><div class="note" style="font-size:12.5px;color:var(--muted);margin-top:2px;">${L.onlyToday}</div></div>
-    <button class="btn secondary small" id="staffLogoutBtn" style="margin:0;">${t().logout}</button></div>`;
+    <div style="display:flex;gap:8px;"><button class="btn secondary small" id="staffMineBtn" style="margin:0;">${XL().myLogin}</button><button class="btn secondary small" id="staffLogoutBtn" style="margin:0;">${t().logout}</button></div></div>`;
 }
 function renderAttendancePage(){
   return `${renderStaffBar()}<h2 class="page-title">${t().nav.attendance}</h2><div class="card">${renderAttendanceForm()}</div>`;
@@ -1324,6 +1400,7 @@ function renderTeam(){
       <div id="tAddErr" class="dr-msg err"></div>
       <button class="btn" type="submit">${L.create}</button>
     </form></div>
+  ${adminsCardHTML()}
   <div class="card"><h3>${L.activity}</h3>
     <div style="max-width:320px;"><label>${L.who}</label><select id="actWho"><option value="">${L.everyone}</option>${actors.map(a=>`<option value="${esc(a)}" ${actFilter===a?'selected':''}>${esc(staffName(a))}</option>`).join('')}</select></div>
     ${rows.length ? `<div class="tablewrap"><table class="act-table">${rows.map(r=>`<tr><td class="actt">${esc(fmtDateTime(r.at))}</td><td><b>${esc(staffName(r.actor))}</b> ${roleChip(r.actor_role)}</td><td>${esc(actText(r))}</td></tr>`).join('')}</table></div>
@@ -1333,7 +1410,7 @@ function renderTeam(){
 function teamErr(e){ const m=String((e&&e.message)||e); const L=TL(); const k=['username_taken','weak_password','invalid_username','no_permission','too_many_accounts','invalid_input'].find(x=>m.includes(x)); return k ? L['e_'+k] : L.e_default; }
 function readPerm(f, prefix){ return {att:f.get(prefix+'att')!==null, rep:f.get(prefix+'rep')!==null, classes:f.getAll(prefix+'cls')}; }
 function bindTeamEvents(){
-  const L=TL();
+  const L=TL(); bindAdminsEvents();
   document.querySelectorAll('.tcEdit').forEach(b=> b.onclick=()=>{ editingTeacher=b.dataset.u; teamMsg={text:'',cls:''}; render(); const c=el('teamEditCard'); if(c&&c.scrollIntoView) c.scrollIntoView({behavior:'smooth',block:'start'}); });
   const tc=el('tCancel'); if(tc) tc.onclick=()=>{ editingTeacher=null; render(); };
   const who=el('actWho'); if(who) who.onchange=()=>{ actFilter=who.value; render(); };
@@ -1552,7 +1629,7 @@ function renderAdminPanel(){
   const todayCount = Object.keys(attendance[today]||{}).length;
   const curMonth = today.slice(0,7);
   let mPresent=0, mTotal=0;
-  Object.keys(attendance).forEach(d=>{ if(d.slice(0,7)===curMonth) Object.values(attendance[d]).forEach(v=>{ if(v==='leave') return; mTotal++; if(v==='present') mPresent++; }); });
+  Object.keys(attendance).forEach(d=>{ if(d.slice(0,7)===curMonth) Object.values(attendance[d]).forEach(v=>{ if(v==='leave') return; mTotal++; if(v==='present'||v==='late') mPresent++; }); });
   const mPct = mTotal ? Math.round(mPresent/mTotal*100) : 0;
   return `
   <h2 class="page-title">${t().adminTitle} <button class="btn secondary small" id="adminLogoutBtn" style="float:${lang==='ur'?'left':'right'};">${t().logout}</button></h2>
@@ -1563,7 +1640,7 @@ function renderAdminPanel(){
     <div class="stat"><div class="icon">${svgIcon('check2')}</div><div class="num">${todayCount}</div><div class="lbl">${t().dashToday}</div></div>
     <div class="stat"><div class="icon">${svgIcon('bars')}</div><div class="num">${mPct}%</div><div class="lbl">${t().dashMonthPct}</div></div>
   </div>
-  <div class="card"><p style="margin:0;font-size:13.5px;color:var(--muted);">${t().adminHint}</p></div>`;
+  <div class="card"><p style="margin:0;font-size:13.5px;color:var(--muted);">${t().adminHint}</p><div style="margin-top:10px;"><button class="btn secondary small" id="dashMine" style="margin:0;">${XL().myLogin}</button></div></div>`;
 }
 
 function renderFinanceLogin(){
@@ -1898,7 +1975,8 @@ function bindEvents(){
   if(monthSelect) monthSelect.onchange = ()=>{ selectedReportMonth = monthSelect.value; render(); };
 
   const attDatePicker = el('attDatePicker');
-  if(attDatePicker) attDatePicker.onchange = ()=>{ selectedAttDate = attDatePicker.value; render(); };
+  if(attDatePicker) attDatePicker.onchange = ()=>{ selectedAttDate = attDatePicker.value; render(); if(userRole==='admin') loadScanLog(selectedAttDate); };
+  document.querySelectorAll('.scanEdit').forEach(b=> b.onclick=()=>editScanTimes(b.dataset.sid));
   const attClassSel = el('attClassSel');
   if(attClassSel) attClassSel.onchange = ()=>{ attClass = attClassSel.value; render(); };
   const presentAllBtn = el('presentAllBtn');
@@ -1963,6 +2041,8 @@ function bindEvents(){
     }catch(e){ showDebugError(e.message || String(e)); }
   };
   const adminLogoutBtn = el('adminLogoutBtn'); if(adminLogoutBtn) adminLogoutBtn.onclick = doLogout;
+  const dashMine = el('dashMine'); if(dashMine) dashMine.onclick = changeMyLogin;
+  const staffMineBtn = el('staffMineBtn'); if(staffMineBtn) staffMineBtn.onclick = changeMyLogin;
   const staffLogoutBtn = el('staffLogoutBtn'); if(staffLogoutBtn) staffLogoutBtn.onclick = doLogout;
   const resetAdminBtn = el('resetAdminBtn');
   if(resetAdminBtn) resetAdminBtn.onclick = async ()=>{
@@ -1971,7 +2051,7 @@ function bindEvents(){
       try{
         const {data, error} = await sb.rpc('reset_admin', {p_username:u, p_password:p});
         if(error) throw error;
-        if(data){ adminSetupNeeded=true; adminUser=null; adminPass=null; render(); }
+        if(data){ const ex = await sb.rpc('admin_exists'); adminSetupNeeded = !ex.data; adminUser=null; adminPass=null; render(); }
         else { el('adminErr').textContent = t().wrongCreds; }
       }catch(e){ showDebugError(e.message || String(e)); }
     } else {
@@ -2060,7 +2140,7 @@ document.addEventListener('keydown', e=>{
 });
 
 // Direct link access for mobile (bookmark https://yoursite/#admin or #finance)
-if(location.hash === '#admin') page = 'admin';
+if(location.hash === '#admin' || STAFF_APP) page = 'admin';
 if(location.hash === '#finance') page = 'finance';
 if(location.hash === '#mycontrib') page = 'mycontrib';
 let initialCheck = '';
@@ -2124,6 +2204,38 @@ var cg=document.getElementById('cg'),px=0,py=0,cx=0,cy=0,run=false;
 document.addEventListener('pointermove',function(e){if(theme()==='classic'||e.pointerType==='touch')return;px=e.clientX;py=e.clientY;cg.classList.add('on');var g=e.target.closest&&e.target.closest('.card,.stat,.prayer-card,.announce-card,.class-chip,.rcard,.doc-list li');if(g){var r=g.getBoundingClientRect();g.style.setProperty('--mx',(e.clientX-r.left)+'px');g.style.setProperty('--my',(e.clientY-r.top)+'px')}if(!run){run=true;requestAnimationFrame(loop)}});
 function loop(){cx+=(px-cx)*.14;cy+=(py-cy)*.14;cg.style.transform='translate3d('+cx+'px,'+cy+'px,0)';if(Math.abs(px-cx)+Math.abs(py-cy)>.5)requestAnimationFrame(loop);else run=false}
 document.documentElement.addEventListener('pointerleave',function(){cg.classList.remove('on')});
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",function(){navigator.serviceWorker.register("madrassa-sw.js").catch(function(){})})}</script>
+<script>
+(function(){
+  var dp=null,box=null;
+  function ur(){try{return typeof lang!=='undefined'&&lang==='ur'}catch(e){return false}}
+  function standalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true}
+  var T={en:{b:'Install app',t:'Add to Home screen',a:'Tap the ⋮ menu (top right) in Chrome, then choose "Install app" or "Add to Home screen".',i:'In Safari tap the Share button, then "Add to Home Screen".',x:'Close'},
+         ur:{b:'ایپ انسٹال کریں',t:'ہوم اسکرین پر شامل کریں',a:'Chrome میں اوپر دائیں ⋮ مینو دبائیں، پھر "Install app" یا "Add to Home screen" چنیں۔',i:'Safari میں Share بٹن دبائیں، پھر "Add to Home Screen" چنیں۔',x:'بند کریں'}};
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;show()});
+  window.addEventListener('appinstalled',function(){hide()});
+  function hide(){if(box){box.remove();box=null}}
+  function show(){
+    if(standalone()||box) return; try{if(sessionStorage.getItem('pwa_x')==='1')return}catch(e){}
+    var l=T[ur()?'ur':'en']; box=document.createElement('div');
+    box.id='pwaBtn'; box.style.cssText='position:fixed;z-index:60;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);display:flex;gap:6px;align-items:center;background:#e8c872;color:#0E332C;border-radius:999px;padding:9px 10px 9px 14px;font:700 14px/1 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer';
+    if(window.innerWidth>860) box.style.bottom='18px';
+    box.innerHTML='<span id="pwaGo">📲 '+l.b+'</span><span id="pwaX" style="opacity:.6;padding:0 4px;font-size:16px">×</span>';
+    document.body.appendChild(box);
+    document.getElementById('pwaX').onclick=function(ev){ev.stopPropagation();try{sessionStorage.setItem('pwa_x','1')}catch(e){}hide()};
+    box.onclick=go;
+  }
+  function go(){
+    if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;hide()});return}
+    var l=T[ur()?'ur':'en'],ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    var m=document.createElement('div'); m.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;padding:20px';
+    m.innerHTML='<div style="background:#fff;color:#0E332C;border-radius:16px;padding:20px;max-width:340px;text-align:center;font:600 15px/1.6 system-ui,sans-serif" dir="'+(ur()?'rtl':'ltr')+'"><div style="font-size:18px;font-weight:800;margin-bottom:8px">📲 '+l.t+'</div>'+(ios?l.i:l.a)+'<div><button style="margin-top:14px;padding:9px 22px;border:0;border-radius:999px;background:#0E332C;color:#fff;font-weight:700">'+l.x+'</button></div></div>';
+    m.onclick=function(){m.remove()}; document.body.appendChild(m);
+  }
+  window.pwaInstall=go;
+  if(!standalone()) setTimeout(function(){if(!dp)show()},2500);
 })();
 </script>
 </body>
