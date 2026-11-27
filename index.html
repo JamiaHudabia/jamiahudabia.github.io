@@ -347,7 +347,7 @@ const ICONS = {
 
 const T = {
 en:{
-  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance",mycontrib:"My Contribution",reports:"Daily Report",attendance:"Attendance",team:"Team",scan:"Scan"},markedBy:"Marked by",attDateToday:"Date (today only)",leave:"Leave",presentAll:"Present All",daysLeave:"Leave",allClasses:"All classes",classFilterL:"Class",presentAllConfirm:"Mark {n} students Present? Existing Absent/Leave marks in this list will be overwritten.",
+  nav:{home:"Home",madrissa:"Madrissa",check:"Check Attendance",mycontrib:"My Contribution",reports:"Daily Report",attendance:"Attendance",team:"Team",scan:"Scan",leave:"Leave Request",export:"Reports & Word",hifz:"Hifz",results:"Results & Prizes",progress:"Hifz & Result"},markedBy:"Marked by",attDateToday:"Date (today only)",leave:"Leave",presentAll:"Present All",daysLeave:"Leave",allClasses:"All classes",classFilterL:"Class",presentAllConfirm:"Mark {n} students Present? Existing Absent/Leave marks in this list will be overwritten.",
   footNote:"Jamia Masjid Hudabia & Jamia Hudabia Taleem Al Quran · Contact: 03225600912",
   homeTitle:"Welcome",homeSub:"Prayer times, announcements, and community info.",
   heroEyebrow:"Assalamu Alaikum", heroLine:"A place of worship, learning, and community.",
@@ -407,7 +407,7 @@ en:{
   receiptHistoryTitle:"Receipt History"
 },
 ur:{
-  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں",mycontrib:"میرا عطیہ",reports:"روزانہ رپورٹ",attendance:"حاضری",team:"ٹیم",scan:"اسکین"},markedBy:"کس نے لگائی",attDateToday:"تاریخ (صرف آج)",leave:"چھٹی",presentAll:"سب حاضر",daysLeave:"چھٹی",allClasses:"تمام کلاسیں",classFilterL:"کلاس",presentAllConfirm:"{n} طلبہ کو حاضر لگائیں؟ اس فہرست میں پہلے سے لگی غیر حاضری/چھٹی بدل جائے گی۔",
+  nav:{home:"صفحہ اول",madrissa:"مدرسہ",check:"حاضری چیک کریں",mycontrib:"میرا عطیہ",reports:"روزانہ رپورٹ",attendance:"حاضری",team:"ٹیم",scan:"اسکین",leave:"رخصت کی درخواست",export:"رپورٹس اور ورڈ",hifz:"حفظ",results:"نتائج و انعامات",progress:"حفظ اور نتیجہ"},markedBy:"کس نے لگائی",attDateToday:"تاریخ (صرف آج)",leave:"چھٹی",presentAll:"سب حاضر",daysLeave:"چھٹی",allClasses:"تمام کلاسیں",classFilterL:"کلاس",presentAllConfirm:"{n} طلبہ کو حاضر لگائیں؟ اس فہرست میں پہلے سے لگی غیر حاضری/چھٹی بدل جائے گی۔",
   footNote:"جامع مسجد حدیبیہ اور جامعہ حدیبیہ تعلیم القرآن · رابطہ: 03225600912",
   homeTitle:"خوش آمدید",homeSub:"نماز کے اوقات، اعلانات اور کمیونٹی کی معلومات۔",
   heroEyebrow:"السلام علیکم", heroLine:"عبادت، تعلیم اور برادری کا مرکز۔",
@@ -569,7 +569,7 @@ async function loadAdminData(){
       ]);
       if(studRes.error) throw studRes.error; if(attRes.error) throw attRes.error;
       students = (studRes.data||[]).map(s=>({id:s.id, roll:s.roll, name:s.name, cls:s.cls, guardian:s.guardian, contact:null, token:null, name_ur:s.name_ur, guardian_ur:s.guardian_ur}));
-      loadPhotos(); loadScanLog();
+      loadPhotos(); loadScanLog(); loadLeaves(); loadHifz(); loadResults();
       admissions = []; notifications = []; attendance = {}; attBy = {};
       (attRes.data||[]).forEach(r=>{ if(!attendance[r.date]) attendance[r.date]={}; attendance[r.date][r.student_id]=r.status; attBy[r.date+'|'+r.student_id]=r.marked_by; });
       return;
@@ -589,7 +589,7 @@ async function loadAdminData(){
     attendance = {}; attBy = {};
     (attRes.data||[]).forEach(r=>{ if(!attendance[r.date]) attendance[r.date]={}; attendance[r.date][r.student_id]=r.status; attBy[r.date+'|'+r.student_id]=r.marked_by; });
     notifications = (notifRes.data||[]).map(n=>({id:n.id, msg:n.msg, time:n.created_at, read:n.is_read}));
-    loadPhotos(); loadScanLog();
+    loadPhotos(); loadScanLog(); loadLeaves(); loadHifz(); loadResults();
     loadAccounts().then(()=>{ if(page==='madrissa'||page==='reports') render(); });
   }catch(e){ showDebugError(e.message || String(e)); }
 }
@@ -680,9 +680,22 @@ function render(){
   if(page==='mycontrib') root.innerHTML = renderMyContribution();
   if(page==='scan') root.innerHTML = canAtt() ? renderScanPage() : renderAdminLogin();
   if(page==='cards') root.innerHTML = renderCards();
+  if(page==='leave') root.innerHTML = renderLeavePage();
+  if(page==='hifz') root.innerHTML = renderHifzPage();
+  if(page==='results') root.innerHTML = renderResultsPage();
+  if(page==='progress') root.innerHTML = renderProgressPage();
+  if(page==='export') root.innerHTML = renderExportPage();
   bindEvents();
   setPageTitle(); linkifyContacts(root);
   if(page==='cards' && adminOK && userRole==='admin') bindCardsEvents();
+  if(page==='leave') bindLeaveEvents();
+  if(page==='progress') bindProgressEvents();
+  if(page==='results') bindResultsEvents();
+  if(page==='hifz'){ document.querySelectorAll('.hfEdit').forEach(b=>b.onclick=()=>openHifzEditor(b.dataset.id)); const cs=el('attClassSel'); if(cs) cs.onchange=()=>{ attClass=cs.value; render(); }; }
+  if(page==='attendance' && adminOK){ const dd=selectedAttDate||todayInPakistan(); if(uniMiss[dd]===undefined) ensureUniform(dd); document.querySelectorAll('.uniBtn').forEach(b=>b.onclick=()=>toggleUniform(b.dataset.sid,b.dataset.d)); }
+  if(page==='export') bindExportEvents();
+  document.querySelectorAll('.lvOk').forEach(b=>b.onclick=()=>decideLeave(b.dataset.id,true)); document.querySelectorAll('.lvNo').forEach(b=>b.onclick=()=>decideLeave(b.dataset.id,false));
+  { const wb=el('waBtn'); if(wb) wb.onclick=openWA; }
   if(page==='scan' && canAtt()) bindScanEvents();
   if(page==='reports' && canRep()) bindReportEvents();
   if(page==='team' && adminOK && userRole==='admin') bindTeamEvents();
@@ -788,7 +801,7 @@ function renderMadrissa(){
       <tr><td class="roll">#${esc(s.roll)}</td><td style="white-space:nowrap;">${avatar(s)}${esc(nmOf(s))}</td><td>${esc(gdOf(s))}</td><td>${esc(clsLbl(s.cls))}</td><td>${esc(s.contact||'')}</td>
       <td class="row-actions"><button data-i="${i}" class="editStudent">${t().editBtn}</button><button data-i="${i}" class="delStudent">${t().delete}</button></td></tr>`).join('')}</table>`
       : `<div class="empty">${t().noStudents}</div>`}
-    ${students.length ? `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;"><div class="section-heading" style="margin-top:0;">${t().photoBulk}</div><p style="font-size:12.5px;color:var(--muted);margin:0 0 8px;">${t().photoBulkHint}</p><input type="file" id="photoBulkInput" accept="image/*" multiple><div id="photoBulkMsg" style="font-size:13px;margin-top:6px;"></div><div style="margin-top:12px;"><button class="btn" id="openCards" style="margin:0;">${t().cardsBtn}</button></div></div>` : ''}
+    ${students.length ? `<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:12px;"><div class="section-heading" style="margin-top:0;">${t().photoBulk}</div><p style="font-size:12.5px;color:var(--muted);margin:0 0 8px;">${t().photoBulkHint}</p><input type="file" id="photoBulkInput" accept="image/*" multiple><div id="photoBulkMsg" style="font-size:13px;margin-top:6px;"></div><div style="margin-top:12px;"><button class="btn" id="openCards" style="margin:0;">${t().cardsBtn}</button> <button class="btn secondary" id="openExport" style="margin:0;">${YL().expOpen}</button></div></div>` : ''}
     ${(editingStudent>=0 && students[editingStudent]) ? `
     <form id="editStudentForm" novalidate style="margin-top:16px;border:1px solid var(--line);border-radius:12px;padding:14px;">
       <div class="section-heading" style="margin-top:0;">${t().editStudent}</div>
@@ -941,6 +954,216 @@ function renderPrivateReport(){
   return `<h2 class="page-title">${DR().privateTitle}</h2>` + studentCardHTML(privateReport, 'full');
 }
 let selectedAttDate = null, attClass = '';
+
+// ===================== LEAVE, WHATSAPP, WORD EXPORT =====================
+const YE = {leaveTitle:'Leave request',leaveSub:'Parents can ask for leave for their child. Enter the same code you use to check attendance (roll number – last 3 digits of the phone number, e.g. 12-567).',code:'Code (roll – last 3 digits)',fromD:'From',toD:'To',reason:'Reason (optional)',sendLeave:'Send request',myReq:'My requests',pending:'Waiting',approved:'Approved',rejected:'Rejected',cancelReq:'Cancel request',leaveSent:'Your request was sent. The madrassa will approve or reject it.',leaveFail:{not_found:'Code not found. Check the roll number and the last 3 digits of the phone number.',invalid_dates:'Choose valid dates (from today, up to 30 days).',overlap:'You already have a request for these dates.',too_many:'Too many waiting requests. Please wait for approval.',locked:'Too many wrong tries. Please try again after 30 minutes.',invalid_input:'Please check the reason text.'},
+  leavePanel:'Leave requests',noLeave:'No leave requests.',approve:'Approve',reject:'Reject',days:'day(s)',waBtn:'WhatsApp parents',waTitle:'Message parents',waNone:'No absent or late students on this date.',waNoPhone:'No phone number',waSend:'WhatsApp',waAbs:'Absent',waLate:'Late',
+  expTitle:'Reports & Word downloads',expSub:'Download as a Word file (opens in Microsoft Word, WPS or Google Docs).',expStudents:'Students list',expAtt:'Attendance of the month (grid)',expMonthly:'Monthly attendance report',month:'Month',cls:'Class',allCls:'All classes',expOpen:'Reports & Word downloads',expMade:'Downloaded.',
+  waAbsMsg:(n,r,c,d)=>`Assalamu Alaikum. Your child ${n} (Roll ${r}, ${c}) was ABSENT today (${d}) at Jamia Masjid Hudabia. Please let us know the reason. JazakAllah.`,
+  waLateMsg:(n,r,c,d,tm)=>`Assalamu Alaikum. Your child ${n} (Roll ${r}, ${c}) came LATE today (${d}${tm?' at '+tm:''}) at Jamia Masjid Hudabia. Please make sure he comes on time. JazakAllah.`};
+const YU = {leaveTitle:'رخصت کی درخواست',leaveSub:'والدین اپنے بچے کی رخصت کی درخواست دے سکتے ہیں۔ وہی کوڈ لکھیں جو حاضری چیک کرنے کے لیے لکھتے ہیں (رول نمبر – فون کے آخری 3 ہندسے، مثلاً 12-567)۔',code:'کوڈ (رول – فون کے آخری 3 ہندسے)',fromD:'سے',toD:'تک',reason:'وجہ (اختیاری)',sendLeave:'درخواست بھیجیں',myReq:'میری درخواستیں',pending:'انتظار میں',approved:'منظور',rejected:'مسترد',cancelReq:'درخواست منسوخ کریں',leaveSent:'آپ کی درخواست بھیج دی گئی۔ مدرسہ اسے منظور یا مسترد کرے گا۔',leaveFail:{not_found:'کوڈ نہیں ملا۔ رول نمبر اور فون کے آخری 3 ہندسے چیک کریں۔',invalid_dates:'درست تاریخیں چنیں (آج سے، زیادہ سے زیادہ 30 دن)۔',overlap:'ان تاریخوں کی درخواست پہلے سے موجود ہے۔',too_many:'بہت سی درخواستیں انتظار میں ہیں۔ منظوری کا انتظار کریں۔',locked:'بہت زیادہ غلط کوششیں۔ 30 منٹ بعد دوبارہ کوشش کریں۔',invalid_input:'وجہ کا متن چیک کریں۔'},
+  leavePanel:'رخصت کی درخواستیں',noLeave:'کوئی درخواست نہیں۔',approve:'منظور',reject:'مسترد',days:'دن',waBtn:'والدین کو واٹس ایپ',waTitle:'والدین کو پیغام',waNone:'اس تاریخ کو کوئی غیر حاضر یا لیٹ بچہ نہیں۔',waNoPhone:'فون نمبر نہیں',waSend:'واٹس ایپ',waAbs:'غیر حاضر',waLate:'لیٹ',
+  expTitle:'رپورٹس اور ورڈ ڈاؤن لوڈ',expSub:'ورڈ فائل کی صورت میں ڈاؤن لوڈ کریں (Microsoft Word، WPS یا Google Docs میں کھلتی ہے)۔',expStudents:'طلبہ کی فہرست',expAtt:'مہینے کی حاضری (گرڈ)',expMonthly:'ماہانہ حاضری رپورٹ',month:'مہینہ',cls:'کلاس',allCls:'تمام کلاسیں',expOpen:'رپورٹس اور ورڈ ڈاؤن لوڈ',expMade:'ڈاؤن لوڈ ہو گیا۔',
+  waAbsMsg:(n,r,c,d)=>`السلام علیکم! آپ کے بچے ${n} (رول ${r}، ${c}) آج ${d} کو جامع مسجد حدیبیہ میں غیر حاضر ہیں۔ براہ کرم وجہ سے آگاہ کریں۔ جزاک اللہ`,
+  waLateMsg:(n,r,c,d,tm)=>`السلام علیکم! آپ کے بچے ${n} (رول ${r}، ${c}) آج ${d}${tm?' کو '+tm+' بجے':''} لیٹ آئے۔ براہ کرم وقت پر بھیجیں۔ جزاک اللہ`};
+function YL(){ return lang==='ur' ? YU : YE; }
+function attDefault(date, sid){ const v=(attendance[date]||{})[sid]; return ['present','late','absent','leave'].includes(v) ? v : ''; }
+let leaves = [];
+async function loadLeaves(){
+  if(!(adminOK && (userRole==='admin' || canAtt()))) return;
+  try{ const {data,error}=await sb.rpc('get_leaves',{p_username:adminUser,p_password:adminPass}); if(error) throw error; leaves=data||[]; if(page==='attendance'||page==='madrissa') render(); }catch(e){ console.error('leaves',e); }
+}
+function fmtD(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString(lang==='ur'?'ur-PK':'en-GB',{day:'numeric',month:'short'}); }catch(e){ return d; } }
+function leaveDays(l){ return Math.round((new Date(l.to_date)-new Date(l.from_date))/86400000)+1; }
+function leavePanelHTML(){
+  const Y=YL(); const pend=leaves.filter(l=>l.status==='pending'); if(!leaves.length) return '';
+  return `<div class="card" style="margin-bottom:12px;"><h3 style="margin-top:0;">${Y.leavePanel}${pend.length?` <span class="rchip bad">${pend.length}</span>`:''}</h3>${leaves.slice(0,12).map(l=>{ const st=students.find(x=>x.id===l.student_id); if(!st) return ''; return `<div style="padding:8px 0;border-top:1px solid var(--line,#ddd);"><div><b>${esc(nmOf(st))}</b> <span class="note">#${esc(st.roll)} · ${esc(clsLbl(st.cls))}</span></div><div style="font-size:13px;">${esc(fmtD(l.from_date))} – ${esc(fmtD(l.to_date))} (${leaveDays(l)} ${Y.days})${l.reason?` · ${esc(l.reason)}`:''}</div><div style="margin-top:4px;">${l.status==='pending'?`<button class="btn small lvOk" data-id="${esc(l.id)}" style="margin:0 6px 0 0;">${Y.approve}</button><button class="btn secondary small lvNo" data-id="${esc(l.id)}" style="margin:0;">${Y.reject}</button>`:`<span class="rchip ${l.status==='approved'?'ok':'bad'}">${Y[l.status]}</span>`}</div></div>`; }).join('')}</div>`;
+}
+async function decideLeave(id, ok){ try{ const {error}=await sb.rpc('decide_leave',{p_username:adminUser,p_password:adminPass,p_id:id,p_approve:ok}); if(error) throw error; toast(ok?YL().approved+' ✓':YL().rejected); await loadAdminData(); await loadLeaves(); }catch(e){ showDebugError(e.message||String(e)); } }
+function waLink(phone, text){ let d=String(phone||'').replace(/\D/g,''); if(d.startsWith('0092')) d=d.slice(2); if(d.startsWith('0')) d='92'+d.slice(1); else if(d.length===10 && d.startsWith('3')) d='92'+d; if(d.length<11) return ''; return 'https://wa.me/'+d+'?text='+encodeURIComponent(text); }
+function openWA(){
+  const Y=YL(), date=selectedAttDate||todayInPakistan(), att=attendance[date]||{}, u=lang==='ur';
+  const rows=students.filter(x=>(!attClass||x.cls===attClass) && (att[x.id]==='absent'||att[x.id]==='late'));
+  const dfmt = fmtD(date);
+  const items = rows.map(x=>{ const nm=nmOf(x), st=att[x.id]; const tm=(st==='late'&&scanLog[x.id]&&scanLog[x.id].in&&scanLogDate===date)?fmtT(scanLog[x.id].in):''; const msg = st==='absent' ? Y.waAbsMsg(nm,x.roll,clsLbl(x.cls),dfmt) : Y.waLateMsg(nm,x.roll,clsLbl(x.cls),dfmt,tm); const link=waLink(x.contact,msg);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #ddd;"><div><b>${esc(nm)}</b> <span class="rchip ${st==='absent'?'bad':''}">${st==='absent'?Y.waAbs:Y.waLate}</span><div class="note">#${esc(x.roll)} · ${esc(clsLbl(x.cls))}</div></div>${link?`<a class="btn small" style="margin:0;text-decoration:none;" href="${link}" target="_blank" rel="noopener">${Y.waSend}</a>`:`<span class="note">${Y.waNoPhone}</span>`}</div>`; }).join('');
+  const d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px'; d.setAttribute('dir',u?'rtl':'ltr');
+  d.innerHTML=`<div class="card" style="max-width:480px;width:100%;margin:0;max-height:90vh;overflow:auto;"><h3 style="margin-top:0;">${Y.waTitle} — ${esc(dfmt)}</h3>${items||`<p>${Y.waNone}</p>`}<div style="margin-top:12px;"><button class="btn secondary small" id="waX" style="margin:0;">${XL().cancel}</button></div></div>`;
+  document.body.appendChild(d); d.querySelector('#waX').onclick=()=>d.remove(); d.onclick=e=>{ if(e.target===d) d.remove(); };
+}
+// ---- public leave page
+let leaveCode='', leaveList=null, leaveMsg=null;
+function renderLeavePage(){
+  const Y=YL(), today=todayInPakistan();
+  return `<div class="search-hero"><h2>${Y.leaveTitle}</h2><p>${Y.leaveSub}</p></div>
+  <div class="card"><form id="lvForm" novalidate autocomplete="off"><label>${Y.code}</label><input id="lvCode" inputmode="text" value="${esc(leaveCode)}" placeholder="12-567">
+  <div class="tmgrid" style="margin-top:6px;"><div><label>${Y.fromD}</label><input type="date" id="lvFrom" min="${today}" value="${today}"></div><div><label>${Y.toD}</label><input type="date" id="lvTo" min="${today}" value="${today}"></div></div>
+  <label>${Y.reason}</label><input id="lvReason" maxlength="300">
+  <div id="lvMsg" style="margin:8px 0;font-size:14px;${leaveMsg&&leaveMsg.ok?'color:var(--ok)':'color:var(--bad)'}">${leaveMsg?esc(leaveMsg.text):''}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn" type="submit" style="margin:0;">${Y.sendLeave}</button><button class="btn secondary" type="button" id="lvView" style="margin:0;">${Y.myReq}</button></div></form></div>
+  ${leaveList?`<div class="card"><h3 style="margin-top:0;">${Y.myReq}</h3>${leaveList.length?leaveList.map(l=>`<div style="padding:8px 0;border-top:1px solid #ddd;"><div>${esc(fmtD(l.from_date))} – ${esc(fmtD(l.to_date))}${l.reason?` · ${esc(l.reason)}`:''}</div><div><span class="rchip ${l.status==='approved'?'ok':(l.status==='rejected'?'bad':'')}">${Y[l.status]}</span>${l.status==='pending'?` <button class="xbtn lvCancel" data-id="${esc(l.id)}">${Y.cancelReq}</button>`:''}</div></div>`).join(''):`<p class="note">${Y.noLeave}</p>`}</div>`:''}`;
+}
+function leaveErr(e){ const m=String((e&&e.message)||e), F=YL().leaveFail; for(const k in F){ if(m.includes(k)) return F[k]; } return (lang==='ur'?'درخواست نہیں بھیجی جا سکی۔ دوبارہ کوشش کریں۔':'Could not send. Please try again.'); }
+async function loadMyLeaves(){ const q=el('lvCode').value.trim(); leaveCode=q; try{ const {data,error}=await sb.rpc('get_leave_status',{p_query:q}); if(error) throw error; leaveList=data||[]; if(!leaveList.length) leaveMsg={ok:false,text:YL().leaveFail.not_found}; else leaveMsg=null; }catch(e){ leaveList=null; leaveMsg={ok:false,text:leaveErr(e)}; } render(); }
+function bindLeaveEvents(){
+  const f=el('lvForm'); if(!f) return;
+  f.onsubmit=async e=>{ e.preventDefault(); const q=el('lvCode').value.trim(); leaveCode=q;
+    try{ const {error}=await sb.rpc('submit_leave',{p_query:q,p_from:el('lvFrom').value,p_to:el('lvTo').value,p_reason:el('lvReason').value}); if(error) throw error; leaveMsg={ok:true,text:YL().leaveSent}; await loadMyLeaves(); if(!leaveMsg) leaveMsg={ok:true,text:YL().leaveSent}; render(); }
+    catch(ex){ leaveMsg={ok:false,text:leaveErr(ex)}; render(); } };
+  el('lvView').onclick=loadMyLeaves;
+  const fr=el('lvFrom'), to=el('lvTo'); if(fr&&to) fr.onchange=()=>{ if(to.value<fr.value) to.value=fr.value; to.min=fr.value; };
+  document.querySelectorAll('.lvCancel').forEach(b=> b.onclick=async()=>{ try{ const {error}=await sb.rpc('cancel_leave',{p_query:leaveCode,p_id:b.dataset.id}); if(error) throw error; await loadMyLeaves(); }catch(e){ leaveMsg={ok:false,text:leaveErr(e)}; render(); } });
+}
+// ---- Word export
+function wordDownload(filename, title, bodyHTML, landscape){
+  const u=lang==='ur';
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(title)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>@page Section1{size:${landscape?'841.9pt 595.3pt':'595.3pt 841.9pt'};mso-page-orientation:${landscape?'landscape':'portrait'};margin:28pt 28pt 28pt 28pt}div.Section1{page:Section1}body{font-family:Arial,"Noto Naskh Arabic","Jameel Noori Nastaleeq",sans-serif}h1{font-size:16pt;text-align:center;margin:0}h2{font-size:12pt;text-align:center;margin:2pt 0 8pt;font-weight:normal}table{border-collapse:collapse;width:100%}td,th{border:1px solid #555;padding:2pt 3pt;font-size:${landscape?'8':'10'}pt;text-align:center}th{background:#e8e8e8}td.l{text-align:left}</style></head><body><div class="Section1" dir="${u?'rtl':'ltr'}"><h1>Jamia Masjid Hudabia · جامع مسجد حدیبیہ</h1><h2>${esc(title)}</h2>${bodyHTML}</div></body></html>`;
+  const blob=new Blob(['﻿',html],{type:'application/msword;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename+'.doc'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+  toast(YL().expMade);
+}
+let expMonth='', expCls='';
+function monthDays(m){ const [y,mo]=m.split('-').map(Number); return new Date(y,mo,0).getDate(); }
+function exportList(){ return students.filter(x=>!expCls||x.cls===expCls).slice().sort((a,b)=>a.cls.localeCompare(b.cls)||a.roll-b.roll); }
+function doExport(kind){
+  const m=expMonth||todayInPakistan().slice(0,7), list=exportList(), ur=lang==='ur';
+  const stLetter={present:'P',late:'L',absent:'A',leave:'Lv'};
+  if(kind==='students'){
+    const rows=list.map(x=>`<tr><td>${esc(x.roll)}</td><td class="l">${esc(x.name)}${x.name_ur?'<br>'+esc(x.name_ur):''}</td><td class="l">${esc(x.guardian||'')}${x.guardian_ur?'<br>'+esc(x.guardian_ur):''}</td><td>${esc(clsLbl(x.cls))}</td><td>${esc(x.contact||'')}</td></tr>`).join('');
+    wordDownload('students-'+todayInPakistan(), (ur?'طلبہ کی فہرست':'Students list')+' — '+todayInPakistan(), `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().contact}</th></tr>${rows}</table>`, false);
+  } else if(kind==='grid'){
+    const n=monthDays(m), head=Array.from({length:n},(_,i)=>`<th>${i+1}</th>`).join('');
+    const rows=list.map(x=>{ let P=0,L=0,A=0,V=0; const cells=Array.from({length:n},(_,i)=>{ const d=m+'-'+String(i+1).padStart(2,'0'); const v=(attendance[d]||{})[x.id]; if(v==='present')P++; else if(v==='late')L++; else if(v==='absent')A++; else if(v==='leave')V++; return `<td>${v?stLetter[v]:''}</td>`; }).join('');
+      return `<tr><td>${esc(x.roll)}</td><td class="l">${esc(nmOf(x))}</td>${cells}<td>${P}</td><td>${L}</td><td>${A}</td><td>${V}</td></tr>`; }).join('');
+    wordDownload('attendance-'+m, (ur?'حاضری':'Attendance')+' — '+m+(expCls?' — '+clsLbl(expCls):'')+' (P=Present, L=Late, A=Absent, Lv=Leave)', `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th>${head}<th>P</th><th>L</th><th>A</th><th>Lv</th></tr>${rows}</table>`, true);
+  } else {
+    const n=monthDays(m); const days=[]; for(let i=1;i<=n;i++){ const d=m+'-'+String(i).padStart(2,'0'); if(attendance[d] && Object.keys(attendance[d]).length) days.push(d); }
+    const rows=list.map(x=>{ let P=0,L=0,A=0,V=0; days.forEach(d=>{ const v=(attendance[d]||{})[x.id]; if(v==='present')P++; else if(v==='late')L++; else if(v==='absent')A++; else if(v==='leave')V++; }); const cnt=P+L+A+V, pct=cnt?Math.round((P+L)*100/cnt):0;
+      return `<tr><td>${esc(x.roll)}</td><td class="l">${esc(nmOf(x))}</td><td class="l">${esc(gdOf(x)||'')}</td><td>${esc(clsLbl(x.cls))}</td><td>${P}</td><td>${L}</td><td>${A}</td><td>${V}</td><td>${cnt}</td><td><b>${pct}%</b></td></tr>`; }).join('');
+    wordDownload('monthly-report-'+m, (ur?'ماہانہ حاضری رپورٹ':'Monthly attendance report')+' — '+m+(expCls?' — '+clsLbl(expCls):''), `<table><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${t().present}</th><th>${t().late}</th><th>${t().absent}</th><th>${t().leave}</th><th>${ur?'کل دن':'Days'}</th><th>%</th></tr>${rows}</table>`, false);
+  }
+}
+function renderExportPage(){
+  if(!(adminOK && userRole==='admin')) return renderAdminLogin();
+  const Y=YL(), classes=[...new Set(students.map(s=>s.cls))].sort(); if(!expMonth) expMonth=todayInPakistan().slice(0,7);
+  return `<div class="noprint"><h2 class="page-title">${Y.expTitle}</h2><p class="page-sub">${Y.expSub}</p>
+  <div class="card"><div class="tmgrid"><div><label>${Y.month}</label><input type="month" id="expMonth" value="${esc(expMonth)}"></div><div><label>${Y.cls}</label><select id="expCls"><option value="">${Y.allCls}</option>${classes.map(c=>`<option value="${esc(c)}" ${expCls===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div></div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;max-width:360px;"><button class="btn" id="exStudents" style="margin:0;">📄 ${Y.expStudents}</button><button class="btn" id="exMonthly" style="margin:0;">📄 ${Y.expMonthly}</button><button class="btn" id="exGrid" style="margin:0;">📄 ${Y.expAtt}</button></div></div>
+  <button class="btn secondary" id="exBack" style="margin:0;">${XL().cancel==='Cancel'?'Back':'واپس'}</button></div>`;
+}
+function bindExportEvents(){
+  const m=el('expMonth'); if(m) m.onchange=()=>{ expMonth=m.value; }; const c=el('expCls'); if(c) c.onchange=()=>{ expCls=c.value; };
+  [['exStudents','students'],['exMonthly','monthly'],['exGrid','grid']].forEach(([id,k])=>{ const b=el(id); if(b) b.onclick=()=>{ if(m) expMonth=m.value; if(c) expCls=c.value; doExport(k); }; });
+  const bk=el('exBack'); if(bk) bk.onclick=()=>{ page='madrissa'; render(); renderNav(); };
+}
+
+// ===================== HIFZ, RESULTS, PRIZES, UNIFORM =====================
+const ZE={hifzTitle:'Hifz progress (paras)',hifzSub:'Tap Edit to tick the paras a student has memorised.',edit:'Edit',save:'Save',paras:'paras',para:'Para',progTitle:'Hifz progress & result',progSub:'Enter the same code you use to check attendance (roll number – last 3 digits of the phone number, e.g. 12-567).',show:'Show',hifzOf:'Memorised',resultOf:'Result',year:'Year',notPub:'Result has not been announced yet. It will be shown on Shab-e-Meraj, insha-Allah.',marks:'Marks',grade:'Grade',rankL:'Position in class',of:'of',resTitle:'Results & prizes',resSub:'Enter marks, then publish the result on Shab-e-Meraj. Parents see it only after you publish.',total:'Total marks',obt:'Marks',saveAll:'Save all marks',pub:'Result is published',unpub:'Result is hidden from parents',publish:'Publish result',unpublish:'Hide result',saved:'Saved ✓',prizes:'Prizes',pFrom:'From',pTo:'To',showPrizes:'Show prize winners',perfectAtt:'Perfect attendance shield',fullUni:'Complete uniform shield',noWinners:'No winners found for this period.',uniNote:'Uniform prize counts only the days when a teacher marked “uniform missing” on the attendance page. Days: attendance days recorded.',uniMiss:'Uniform missing',wordBtn:'Download Word',failMsg:{not_found:'Code not found. Check the roll number and last 3 digits of the phone number.',locked:'Too many wrong tries. Please try again after 30 minutes.',forbidden:'You are not allowed to do this.'},pass:'Fail',pct:'Percentage',needPub:'Hidden'};
+const ZU={hifzTitle:'حفظ کی پیش رفت (پارے)',hifzSub:'ترمیم دبا کر وہ پارے ٹک کریں جو بچے نے حفظ کر لیے ہیں۔',edit:'ترمیم',save:'محفوظ کریں',paras:'پارے',para:'پارہ',progTitle:'حفظ کی پیش رفت اور نتیجہ',progSub:'وہی کوڈ لکھیں جو حاضری چیک کرنے کے لیے لکھتے ہیں (رول نمبر – فون کے آخری 3 ہندسے، مثلاً 12-567)۔',show:'دکھائیں',hifzOf:'حفظ شدہ',resultOf:'نتیجہ',year:'سال',notPub:'نتیجے کا اعلان ابھی نہیں ہوا۔ ان شاء اللہ شب معراج پر دکھایا جائے گا۔',marks:'نمبر',grade:'گریڈ',rankL:'کلاس میں پوزیشن',of:'از',resTitle:'نتائج اور انعامات',resSub:'نمبر لکھیں، پھر شب معراج پر نتیجہ شائع کریں۔ شائع کرنے کے بعد ہی والدین کو نظر آئے گا۔',total:'کل نمبر',obt:'نمبر',saveAll:'تمام نمبر محفوظ کریں',pub:'نتیجہ شائع ہے',unpub:'نتیجہ والدین سے پوشیدہ ہے',publish:'نتیجہ شائع کریں',unpublish:'نتیجہ چھپائیں',saved:'محفوظ ✓',prizes:'انعامات',pFrom:'سے',pTo:'تک',showPrizes:'انعام کے حقدار دکھائیں',perfectAtt:'مکمل حاضری شیلڈ',fullUni:'مکمل یونیفارم شیلڈ',noWinners:'اس مدت میں کوئی حقدار نہیں ملا۔',uniNote:'یونیفارم کا انعام صرف ان دنوں پر مبنی ہے جب استاد نے حاضری کے صفحے پر “یونیفارم نامکمل” لگایا۔ دن: ریکارڈ شدہ حاضری کے دن۔',uniMiss:'یونیفارم نامکمل',wordBtn:'ورڈ ڈاؤن لوڈ',failMsg:{not_found:'کوڈ نہیں ملا۔ رول نمبر اور فون کے آخری 3 ہندسے چیک کریں۔',locked:'بہت زیادہ غلط کوششیں۔ 30 منٹ بعد دوبارہ کوشش کریں۔',forbidden:'آپ کو اجازت نہیں۔'},pass:'فیل',pct:'فیصد',needPub:'پوشیدہ'};
+function ZL(){ return lang==='ur'?ZU:ZE; }
+function zErr(e){ const m=String((e&&e.message)||e), F=ZL().failMsg; for(const k in F){ if(m.includes(k)) return F[k]; } return lang==='ur'?'کچھ غلط ہو گیا۔ دوبارہ کوشش کریں۔':'Something went wrong. Please try again.'; }
+function gradeOf(pct){ return pct>=90?'A+':pct>=80?'A':pct>=70?'B':pct>=60?'C':pct>=50?'D':'F'; }
+function paraGrid(sel, editable){ let h='<div class="paragrid" style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;direction:ltr;">'; for(let i=1;i<=30;i++){ const on=sel.includes(i); h+= editable ? `<label style="border:1px solid #999;border-radius:6px;text-align:center;padding:5px 0;font-size:13px;cursor:pointer;${on?'background:#1b7a46;color:#fff;':''}"><input type="checkbox" class="pChk" value="${i}" ${on?'checked':''} style="display:none">${i}</label>` : `<div style="border:1px solid #999;border-radius:6px;text-align:center;padding:5px 0;font-size:13px;${on?'background:#1b7a46;color:#fff;':'opacity:.55;'}">${i}</div>`; } return h+'</div>'; }
+// --- staff hifz
+let hifzMap={};
+async function loadHifz(){ if(!(adminOK && (userRole==='admin'||canAtt()))) return; try{ const {data,error}=await sb.rpc('get_hifz',{p_username:adminUser,p_password:adminPass}); if(error) throw error; hifzMap={}; (data||[]).forEach(r=>{ hifzMap[r.student_id]=r.paras||[]; }); if(page==='hifz') render(); }catch(e){ console.error('hifz',e); } }
+function renderHifzPage(){
+  if(!adminOK) return renderAdminLogin(); const Z=ZL();
+  const classes=[...new Set(students.map(x=>x.cls))].sort(); const list=students.filter(x=>!attClass||x.cls===attClass).slice().sort((a,b)=>a.cls.localeCompare(b.cls)||a.roll-b.roll);
+  return `${renderStaffBar()}<h2 class="page-title">${Z.hifzTitle}</h2><p class="page-sub">${Z.hifzSub}</p><div class="card"><div style="margin-bottom:8px;"><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
+  ${list.map(x=>{ const n=(hifzMap[x.id]||[]).length; return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #ddd;"><div style="flex:1;min-width:0;">${avatar(x)}<b>${esc(nmOf(x))}</b> <span class="note">#${esc(x.roll)} · ${esc(clsLbl(x.cls))}</span><div style="height:7px;background:#ddd;border-radius:4px;margin-top:4px;"><div style="height:7px;width:${Math.round(n*100/30)}%;background:#1b7a46;border-radius:4px;"></div></div></div><div style="white-space:nowrap;font-size:13px;">${n}/30</div><button class="btn small hfEdit" data-id="${esc(x.id)}" style="margin:0;">${Z.edit}</button></div>`; }).join('')}</div>`;
+}
+function openHifzEditor(id){
+  const x=students.find(v=>v.id===id); if(!x) return; const Z=ZL(); const d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px';
+  d.innerHTML=`<div class="card" style="max-width:420px;width:100%;margin:0;max-height:90vh;overflow:auto;"><h3 style="margin-top:0;">${esc(nmOf(x))}</h3>${paraGrid(hifzMap[id]||[],true)}<div style="display:flex;gap:8px;margin-top:12px;"><button class="btn small" id="hfSave" style="margin:0;">${Z.save}</button><button class="btn secondary small" id="hfX" style="margin:0;">${XL().cancel}</button></div></div>`;
+  document.body.appendChild(d);
+  d.querySelectorAll('.pChk').forEach(c=>c.onchange=()=>{ c.parentElement.style.background=c.checked?'#1b7a46':''; c.parentElement.style.color=c.checked?'#fff':''; });
+  d.querySelector('#hfX').onclick=()=>d.remove();
+  d.querySelector('#hfSave').onclick=async()=>{ const v=[...d.querySelectorAll('.pChk:checked')].map(c=>+c.value); try{ const {error}=await sb.rpc('set_hifz',{p_username:adminUser,p_password:adminPass,p_student:id,p_paras:v}); if(error) throw error; hifzMap[id]=v; d.remove(); toast(ZL().saved); render(); }catch(e){ toast(zErr(e),'err'); } };
+}
+// --- results + prizes (admin)
+let resYear=new Date().getFullYear(), resTotal=100, resMap={}, resPubOn=false, prizeFrom='', prizeTo='', prizeRows=null;
+async function loadResults(){ if(!(adminOK && userRole==='admin')) return; try{ const {data,error}=await sb.rpc('get_results',{p_username:adminUser,p_password:adminPass,p_year:resYear}); if(error) throw error; resMap={}; (data||[]).forEach(r=>{ resMap[r.student_id]=r; resTotal=+r.total||resTotal; }); const pr=await sb.rpc('get_results_published',{p_username:adminUser,p_password:adminPass,p_year:resYear}); resPubOn=!!pr.data; if(page==='results') render(); }catch(e){ console.error('results',e); } }
+function renderResultsPage(){
+  if(!(adminOK && userRole==='admin')) return renderAdminLogin(); const Z=ZL(); if(!prizeFrom){ prizeFrom=resYear+'-01-01'; prizeTo=resYear+'-12-31'; }
+  const classes=[...new Set(students.map(x=>x.cls))].sort(); const list=students.filter(x=>!attClass||x.cls===attClass).slice().sort((a,b)=>a.cls.localeCompare(b.cls)||a.roll-b.roll);
+  const shield=(nm,sub,kind)=>`<div style="text-align:center;padding:10px;border:1px solid #ddd;border-radius:10px;"><svg viewBox="0 0 64 76" width="54" height="64"><path d="M32 3 L60 12 V36 C60 54 46 68 32 73 C18 68 4 54 4 36 V12 Z" fill="${kind==='att'?'#c9a227':'#2a7fb8'}" stroke="#6b5200" stroke-width="2"/><path d="M32 14 l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z" fill="#fff"/></svg><div style="font-weight:700;margin-top:4px;">${esc(nm)}</div><div class="note">${esc(sub)}</div></div>`;
+  let prizeHTML=''; if(prizeRows){ const byId=Object.fromEntries(students.map(x=>[x.id,x])); const A=prizeRows.filter(r=>r.days>0&&r.absents===0&&byId[r.student_id]), U=prizeRows.filter(r=>r.days>0&&r.uniform_missing===0&&byId[r.student_id]);
+    const box=(arr,kind,lbl)=>`<h4>${lbl} (${arr.length})</h4>${arr.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;">${arr.map(r=>{ const x=byId[r.student_id]; return shield(nmOf(x),`#${x.roll} · ${clsLbl(x.cls)} · ${r.days} ${YL().days}`,kind); }).join('')}</div>`:`<p class="note">${Z.noWinners}</p>`}`;
+    prizeHTML=`<p class="note">${Z.uniNote}</p>${box(A,'att',Z.perfectAtt)}${box(U,'uni',Z.fullUni)}<button class="btn secondary small" id="prWord" style="margin:10px 0 0;">${Z.wordBtn}</button>`; }
+  return `<h2 class="page-title">${Z.resTitle}</h2><p class="page-sub">${Z.resSub}</p>
+  <div class="card"><div class="tmgrid"><div><label>${Z.year}</label><input type="number" id="rsYear" value="${resYear}" min="2020" max="2100"></div><div><label>${Z.total}</label><input type="number" id="rsTotal" value="${resTotal}" min="1"></div></div>
+  <div style="margin:8px 0;"><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
+  <div class="tablewrap"><table class="att-table"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${Z.obt}</th><th>${Z.grade}</th></tr>${list.map(x=>{ const r=resMap[x.id]; const pc=r?Math.round(r.obtained*100/r.total):null; return `<tr><td class="roll">#${esc(x.roll)}</td><td>${esc(nmOf(x))}<span class="guard">${esc(clsLbl(x.cls))}</span></td><td><input type="number" class="rsObt" data-id="${esc(x.id)}" value="${r?esc(r.obtained):''}" min="0" step="0.5" style="width:80px;"></td><td>${r?esc(r.grade||gradeOf(pc)):''}</td></tr>`; }).join('')}</table></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button class="btn" id="rsSave" style="margin:0;">${Z.saveAll}</button><button class="btn ${resPubOn?'secondary':''}" id="rsPub" style="margin:0;">${resPubOn?Z.unpublish:Z.publish}</button></div><p class="note" id="rsStatus">${resPubOn?Z.pub:Z.unpub}</p></div>
+  <div class="card"><h3 style="margin-top:0;">🏆 ${Z.prizes}</h3><div class="tmgrid"><div><label>${Z.pFrom}</label><input type="date" id="prFrom" value="${esc(prizeFrom)}"></div><div><label>${Z.pTo}</label><input type="date" id="prTo" value="${esc(prizeTo)}"></div></div><button class="btn" id="prShow" style="margin:8px 0;">${Z.showPrizes}</button>${prizeHTML}</div>`;
+}
+function bindResultsEvents(){
+  const Z=ZL(); const y=el('rsYear'); if(y) y.onchange=()=>{ resYear=+y.value||resYear; prizeFrom=''; prizeRows=null; resMap={}; loadResults(); render(); };
+  const cs=el('attClassSel'); if(cs) cs.onchange=()=>{ attClass=cs.value; render(); };
+  const sv=el('rsSave'); if(sv) sv.onclick=async()=>{ const tot=+el('rsTotal').value||100; resTotal=tot; let ok=true; for(const i of document.querySelectorAll('.rsObt')){ const v=i.value.trim(); const old=resMap[i.dataset.id]; if(v===''&&!old) continue; if(old&&String(old.obtained)===v&&+old.total===tot) continue; const ob=v===''?null:+v; if(ob!==null&&(isNaN(ob)||ob<0||ob>tot)){ toast(Z.obt+'?','err'); ok=false; break; } const g=ob===null?null:gradeOf(Math.round(ob*100/tot)); try{ const {error}=await sb.rpc('set_result',{p_username:adminUser,p_password:adminPass,p_student:i.dataset.id,p_year:resYear,p_obtained:ob,p_total:tot,p_grade:g,p_note:null}); if(error) throw error; }catch(e){ toast(zErr(e),'err'); ok=false; break; } } if(ok){ toast(Z.saved); await loadResults(); render(); } };
+  const pb=el('rsPub'); if(pb) pb.onclick=async()=>{ try{ const {error}=await sb.rpc('set_results_publish',{p_username:adminUser,p_password:adminPass,p_year:resYear,p_pub:!resPubOn}); if(error) throw error; resPubOn=!resPubOn; render(); }catch(e){ toast(zErr(e),'err'); } };
+  const ps=el('prShow'); if(ps) ps.onclick=async()=>{ prizeFrom=el('prFrom').value; prizeTo=el('prTo').value; try{ const {data,error}=await sb.rpc('get_prizes',{p_username:adminUser,p_password:adminPass,p_from:prizeFrom,p_to:prizeTo}); if(error) throw error; prizeRows=data||[]; render(); }catch(e){ toast(zErr(e),'err'); } };
+  const pw=el('prWord'); if(pw) pw.onclick=()=>{ const by=Object.fromEntries(students.map(x=>[x.id,x])); const row=(arr)=>arr.map(r=>{ const x=by[r.student_id]; return `<tr><td>${esc(x.roll)}</td><td class="l">${esc(nmOf(x))}</td><td class="l">${esc(gdOf(x)||'')}</td><td>${esc(clsLbl(x.cls))}</td><td>${r.days}</td></tr>`; }).join(''); const A=prizeRows.filter(r=>r.days>0&&r.absents===0&&by[r.student_id]), U=prizeRows.filter(r=>r.days>0&&r.uniform_missing===0&&by[r.student_id]); const th=`<tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().fatherGuardian}</th><th>${t().className}</th><th>${YL().days}</th></tr>`; wordDownload('prizes-'+resYear, Z.prizes+' '+prizeFrom+' → '+prizeTo, `<h3>${Z.perfectAtt}</h3><table>${th}${row(A)}</table><h3>${Z.fullUni}</h3><table>${th}${row(U)}</table>`, false); };
+}
+// --- public progress page
+let progCode='', progData=null, progMsg='', progYear=new Date().getFullYear();
+function renderProgressPage(){
+  const Z=ZL(); let out='';
+  if(progData){ const h=progData.paras, r=progData.res; out=`<div class="card"><h3 style="margin-top:0;">${Z.hifzOf}: ${h.length}/30 ${Z.paras}</h3>${paraGrid(h,false)}</div><div class="card"><h3 style="margin-top:0;">${Z.resultOf} ${esc(progYear)}</h3>${r?`<div style="text-align:center;"><div style="font-size:30px;font-weight:700;">${esc(r.obtained)} / ${esc(r.total)}</div><div>${Z.pct}: ${Math.round(r.obtained*100/r.total)}% · ${Z.grade}: <b>${esc(r.grade||gradeOf(Math.round(r.obtained*100/r.total)))}</b></div><div class="note">${Z.rankL}: ${esc(r.rank_in_class)} ${Z.of} ${esc(r.class_size)}</div></div>`:`<p class="note">${Z.notPub}</p>`}</div>`; }
+  return `<div class="search-hero"><h2>${Z.progTitle}</h2><p>${Z.progSub}</p></div><div class="card"><form id="pgForm" novalidate autocomplete="off"><input id="pgCode" value="${esc(progCode)}" placeholder="12-567"><div class="tmgrid" style="margin-top:6px;"><div><label>${Z.year}</label><input type="number" id="pgYear" value="${progYear}" min="2020" max="2100"></div></div><div style="margin:8px 0;color:var(--bad);font-size:14px;">${esc(progMsg)}</div><button class="btn" type="submit" style="margin:0;">${Z.show}</button></form></div>${out}`;
+}
+function bindProgressEvents(){ const f=el('pgForm'); if(!f) return; f.onsubmit=async e=>{ e.preventDefault(); progCode=el('pgCode').value.trim(); progYear=+el('pgYear').value||progYear; try{ const h=await sb.rpc('get_hifz_public',{p_query:progCode}); if(h.error) throw h.error; const r=await sb.rpc('get_result_public',{p_query:progCode,p_year:progYear}); if(r.error) throw r.error; progData={paras:h.data||[],res:(r.data&&r.data[0])||null}; progMsg=''; }catch(ex){ progData=null; progMsg=zErr(ex); } render(); }; }
+// --- uniform on attendance
+let uniMiss={}, uniLoading={};
+function uniBtn(s,date){ const on=(uniMiss[date]||[]).includes(s.id); return `<button class="xbtn uniBtn" data-sid="${esc(s.id)}" data-d="${esc(date)}" title="${esc(ZL().uniMiss)}" style="${on?'background:#b3261e;color:#fff;':''}">👔${on?' ✗':''}</button>`; }
+async function ensureUniform(date){ if(!adminOK||uniLoading[date]) return; uniLoading[date]=1; try{ const {data,error}=await sb.rpc('get_uniform_missing',{p_username:adminUser,p_password:adminPass,p_from:date,p_to:date}); if(error) throw error; uniMiss[date]=(data||[]).map(r=>r.student_id); if(page==='attendance') render(); }catch(e){ console.error('uni',e); } }
+async function toggleUniform(sid,date){ const on=(uniMiss[date]||[]).includes(sid); try{ const {error}=await sb.rpc('mark_uniform',{p_username:adminUser,p_password:adminPass,p_student:sid,p_date:date,p_missing:!on}); if(error) throw error; uniMiss[date]=on?(uniMiss[date]||[]).filter(v=>v!==sid):[...(uniMiss[date]||[]),sid]; render(); }catch(e){ toast(zErr(e),'err'); } }
+
+// ===================== PUSH NOTIFICATIONS =====================
+const VAPID_PUB='BNfTBOawSSkJVxyw9z7yT12vHGMgUFYZ-m-uTUKnGwunuJgPkjgxF-bfml5c-NMMpqFndjjBMi5sVohOTkte9wY';
+const NE={link:'Notifications',title:'Notifications',sub:'Get prayer-time alerts, notices and attendance alerts for your child on this phone.',code:"Child's code for attendance alerts (optional)",codeH:'Roll number – last 3 digits of the phone number, e.g. 12-567',prayer:'Prayer time alerts',staff:'Staff alerts (leave requests, messages)',enable:'Turn on',off:'Turn off',on:'Notifications are ON on this device.',update:'Save changes',close:'Close',unsupported:'This browser does not support notifications.',ios:'On iPhone: first tap Share → “Add to Home Screen”, then open the app from the home screen icon and turn on notifications here.',denied:'Notification permission was blocked. Allow notifications for this site in the browser settings and try again.',done:'Notifications turned on ✓',offDone:'Notifications turned off.',fail:{not_found:'Code not found. Check the roll number and last 3 digits of the phone number.',locked:'Too many wrong tries. Please try again after 30 minutes.',invalid_input:'This browser is not supported for notifications.',too_many:'Too many devices registered. Please contact the madrassa.'},generic:'Could not turn on notifications. Please try again.'};
+const NU={link:'اطلاعات',title:'اطلاعات (نوٹیفکیشن)',sub:'اس فون پر نماز کے وقت، اعلانات اور اپنے بچے کی حاضری کی اطلاع حاصل کریں۔',code:'بچے کا کوڈ (حاضری کی اطلاع کے لیے، اختیاری)',codeH:'رول نمبر – فون کے آخری 3 ہندسے، مثلاً 12-567',prayer:'نماز کے وقت کی اطلاع',staff:'اسٹاف اطلاعات (رخصت کی درخواستیں، پیغامات)',enable:'آن کریں',off:'بند کریں',on:'اس ڈیوائس پر اطلاعات آن ہیں۔',update:'تبدیلیاں محفوظ کریں',close:'بند کریں',unsupported:'یہ براؤزر اطلاعات کو سپورٹ نہیں کرتا۔',ios:'آئی فون پر: پہلے Share → “Add to Home Screen” دبائیں، پھر ہوم اسکرین کے آئیکن سے ایپ کھولیں اور یہاں اطلاعات آن کریں۔',denied:'اطلاعات کی اجازت بند ہے۔ براؤزر کی سیٹنگز میں اس سائٹ کے لیے اجازت دیں اور دوبارہ کوشش کریں۔',done:'اطلاعات آن ہو گئیں ✓',offDone:'اطلاعات بند ہو گئیں۔',fail:{not_found:'کوڈ نہیں ملا۔ رول نمبر اور فون کے آخری 3 ہندسے چیک کریں۔',locked:'بہت زیادہ غلط کوششیں۔ 30 منٹ بعد دوبارہ کوشش کریں۔',invalid_input:'یہ براؤزر اطلاعات کے لیے سپورٹڈ نہیں۔',too_many:'بہت زیادہ ڈیوائسز رجسٹر ہیں۔ مدرسہ سے رابطہ کریں۔'},generic:'اطلاعات آن نہیں ہو سکیں۔ دوبارہ کوشش کریں۔'};
+function NL(){ return lang==='ur'?NU:NE; }
+function b64u8(b){ const pad='='.repeat((4-b.length%4)%4); const r=atob((b+pad).replace(/-/g,'+').replace(/_/g,'/')); const o=new Uint8Array(r.length); for(let i=0;i<r.length;i++) o[i]=r.charCodeAt(i); return o; }
+function pushSupported(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window); }
+function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+function isStandalone(){ return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true; }
+function nErr(e){ const m=String((e&&e.message)||e), F=NL().fail; for(const k in F){ if(m.includes(k)) return F[k]; } return NL().generic; }
+async function openNotify(){
+  const N=NL(), u=lang==='ur';
+  const d=document.createElement('div'); d.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px'; d.setAttribute('dir',u?'rtl':'ltr');
+  const box=document.createElement('div'); box.className='card'; box.style.cssText='max-width:440px;width:100%;margin:0;max-height:90vh;overflow:auto;'; d.appendChild(box); document.body.appendChild(d);
+  d.onclick=e=>{ if(e.target===d) d.remove(); };
+  const closeBtn=`<button class="btn secondary small" id="ntX" style="margin:0;">${N.close}</button>`;
+  if(!pushSupported() || (isIOS() && !isStandalone())){ box.innerHTML=`<h3 style="margin-top:0;">🔔 ${N.title}</h3><p>${(isIOS()&&!isStandalone())?N.ios:N.unsupported}</p>${closeBtn}`; box.querySelector('#ntX').onclick=()=>d.remove(); return; }
+  let reg=null, sub=null; try{ reg=await navigator.serviceWorker.ready; sub=await reg.pushManager.getSubscription(); }catch(e){}
+  const on=!!sub && Notification.permission==='granted';
+  box.innerHTML=`<h3 style="margin-top:0;">🔔 ${N.title}</h3><p>${N.sub}</p>${on?`<p style="color:var(--ok);font-weight:700;">${N.on}</p>`:''}
+  <label>${N.code}</label><input id="ntCode" inputmode="text" placeholder="12-567"><div class="note">${N.codeH}</div>
+  <label style="display:flex;gap:8px;align-items:center;margin-top:10px;"><input type="checkbox" id="ntPrayer" checked style="width:auto;"> ${N.prayer}</label>
+  ${adminOK&&userRole==='admin'?`<label style="display:flex;gap:8px;align-items:center;margin-top:6px;"><input type="checkbox" id="ntStaff" checked style="width:auto;"> ${N.staff}</label>`:''}
+  <div id="ntMsg" style="margin:10px 0;font-size:14px;color:var(--bad);"></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><button class="btn" id="ntGo" style="margin:0;">${on?N.update:N.enable}</button>${on?`<button class="btn secondary" id="ntOff" style="margin:0;">${N.off}</button>`:''}${closeBtn}</div>`;
+  box.querySelector('#ntX').onclick=()=>d.remove();
+  const msg=t=>{ box.querySelector('#ntMsg').textContent=t; };
+  box.querySelector('#ntGo').onclick=async()=>{
+    msg('');
+    try{
+      if(Notification.permission==='denied'){ msg(N.denied); return; }
+      const perm = Notification.permission==='granted' ? 'granted' : await Notification.requestPermission();
+      if(perm!=='granted'){ msg(N.denied); return; }
+      if(!reg) reg=await navigator.serviceWorker.ready;
+      sub = sub || await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64u8(VAPID_PUB)});
+      const j=sub.toJSON(); const staff=!!(box.querySelector('#ntStaff') && box.querySelector('#ntStaff').checked);
+      const code=box.querySelector('#ntCode').value.trim();
+      const {error}=await sb.rpc('save_push_sub',{p_endpoint:j.endpoint,p_p256dh:j.keys.p256dh,p_auth:j.keys.auth,p_query:code||null,p_prayer:box.querySelector('#ntPrayer').checked,p_lang:lang==='ur'?'ur':'en',p_username:staff?adminUser:null,p_password:staff?adminPass:null});
+      if(error) throw error;
+      try{ localStorage.setItem('hm_push','1'); }catch(e){}
+      d.remove(); toast(N.done);
+    }catch(e){ console.error('push',e); msg(nErr(e)); }
+  };
+  const off=box.querySelector('#ntOff'); if(off) off.onclick=async()=>{ try{ const ep=sub.endpoint; await sub.unsubscribe(); await sb.rpc('remove_push_sub',{p_endpoint:ep}); try{ localStorage.removeItem('hm_push'); }catch(e){} d.remove(); toast(N.offDone); }catch(e){ msg(nErr(e)); } };
+}
 
 // ===================== NEW: labels, modal, timings, admins =====================
 const STAFF_APP = /[?&]app=staff/.test(location.search);
@@ -1161,8 +1384,9 @@ function bindCardsEvents(){
 
 function renderFoot(){
   const u = lang==='ur', f = el('footNote'); const y = new Date().getFullYear();
-  f.innerHTML = `<div>© ${y} ${u?'جامع مسجد حدیبیہ اور جامعہ حدیبیہ تعلیم القرآن':'Jamia Masjid Hudabia &amp; Jamia Hudabia Taleem Al Quran'}</div><div style="margin-top:4px;"><a class="fl" href="tel:+923225600912">${u?'فون':'Call'}: 0322 5600912</a><a class="fl" href="https://wa.me/923225600912" target="_blank" rel="noopener">WhatsApp</a><a class="fl" href="#" data-fp="home">${t().nav.home}</a><a class="fl" href="#" data-fp="check">${t().nav.check}</a><a class="fl" href="#" data-fp="mycontrib">${t().nav.mycontrib}</a></div>`;
+  f.innerHTML = `<div>© ${y} ${u?'جامع مسجد حدیبیہ اور جامعہ حدیبیہ تعلیم القرآن':'Jamia Masjid Hudabia &amp; Jamia Hudabia Taleem Al Quran'}</div><div style="margin-top:4px;"><a class="fl" href="tel:+923225600912">${u?'فون':'Call'}: 0322 5600912</a><a class="fl" href="https://wa.me/923225600912" target="_blank" rel="noopener">WhatsApp</a><a class="fl" href="#" data-fp="home">${t().nav.home}</a><a class="fl" href="#" data-fp="check">${t().nav.check}</a><a class="fl" href="#" data-fp="mycontrib">${t().nav.mycontrib}</a><a class="fl" href="#" id="notifyLink">🔔 ${NL().link}</a></div>`;
   f.querySelectorAll('[data-fp]').forEach(a=> a.onclick=e=>{ e.preventDefault(); page=a.dataset.fp; render(); renderNav(); window.scrollTo(0,0); });
+  { const nl=f.querySelector('#notifyLink'); if(nl) nl.onclick=e=>{ e.preventDefault(); openNotify(); }; }
 }
 const PH_RE = /(?:\+92|0092|92|0)3\d{2}[- ]?\d{7}/g, MAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
 function linkifyContacts(root){
@@ -1175,7 +1399,7 @@ function linkifyContacts(root){
 }
 function setPageTitle(){
   const base = lang==='ur' ? 'جامع مسجد حدیبیہ' : 'Jamia Masjid Hudabia'; const N = t().nav||{};
-  const names = {home:N.home, madrissa:N.madrissa, check:N.check, mycontrib:N.mycontrib, reports:N.reports, attendance:N.attendance, team:N.team, scan:N.scan, admin:(adminOK?(lang==='ur'?'ڈیش بورڈ':'Dashboard'):(lang==='ur'?'اسٹاف لاگ ان':'Staff Login')), cards:(lang==='ur'?'شناختی کارڈ':'ID Cards'), report:(lang==='ur'?'رپورٹ':'Report')};
+  const names = {home:N.home, madrissa:N.madrissa, check:N.check, mycontrib:N.mycontrib, reports:N.reports, attendance:N.attendance, team:N.team, scan:N.scan, hifz:N.hifz, results:N.results, progress:N.progress, admin:(adminOK?(lang==='ur'?'ڈیش بورڈ':'Dashboard'):(lang==='ur'?'اسٹاف لاگ ان':'Staff Login')), cards:(lang==='ur'?'شناختی کارڈ':'ID Cards'), leave:N.leave, export:N.export, report:(lang==='ur'?'رپورٹ':'Report')};
   document.title = (names[page] ? names[page]+' | ' : '') + base;
 }
 
@@ -1232,14 +1456,16 @@ function renderAttendanceForm(){
   const list = students.filter(s=> !attClass || s.cls===attClass);
   const radio = (s,v)=>`<label class="attopt v-${v}"><input type="radio" name="att-${esc(s.id)}" value="${v}" ${curAtt[s.id]===v?'checked':''} class="attRadio" data-sid="${esc(s.id)}"><span>${t()[v]}</span></label>`;
   return `
+    ${leavePanelHTML()}
     <div class="att-toolbar">
       ${isTeacher() ? `<div><label>${t().attDateToday}</label><input type="date" id="attDatePicker" value="${esc(today)}" min="${esc(today)}" max="${esc(today)}" disabled></div>` : `<div><label>${t().attDateLabel}</label><input type="date" id="attDatePicker" value="${esc(curDate)}" max="${esc(today)}"></div>`}
       <div><label>${t().classFilterL}</label><select id="attClassSel"><option value="">${t().allClasses}</option>${classes.map(c=>`<option value="${esc(c)}" ${attClass===c?'selected':''}>${esc(clsLbl(c))}</option>`).join('')}</select></div>
       <div><button class="btn small" id="presentAllBtn" style="margin:0;">${t().presentAll} (${list.length})</button></div>
+      ${userRole==='admin' ? `<div><button class="btn secondary small" id="waBtn" style="margin:0;">📲 ${YL().waBtn}</button></div>` : ''}
     </div>
     <div class="tablewrap"><table class="att-table"><tr><th>${t().rollNo}</th><th>${t().studentName}</th><th>${t().present} / ${t().late} / ${t().absent} / ${t().leave}</th></tr>${list.map(s=>`
     <tr><td class="roll">#${esc(s.roll)}</td><td style="white-space:nowrap;">${avatar(s)}<span style="white-space:normal;display:inline-block;vertical-align:middle;">${esc(nmOf(s))}${gdOf(s)?`<span class="guard">${t().fatherGuardian}: ${esc(gdOf(s))}</span>`:''}</span></td><td>
-      <div class="attgrp">${radio(s,'present')}${radio(s,'late')}${radio(s,'absent')}${radio(s,'leave')}</div>${(scanLogDate===curDate && scanLog[s.id]) ? `<span class="guard">${scanChips(scanLog[s.id])}</span>` : ''}${(userRole==='admin') ? `<button class="xbtn scanEdit" data-sid="${esc(s.id)}" style="margin:4px 0 0;">✎ ${XL().editTimes}</button>` : ''}${attBy[curDate+'|'+s.id] ? `<span class="guard">${t().markedBy}: ${esc(staffName(attBy[curDate+'|'+s.id]))}</span>` : ''}
+      <div class="attgrp">${radio(s,'present')}${radio(s,'late')}${radio(s,'absent')}${radio(s,'leave')}</div>${adminOK?uniBtn(s,curDate):''}${(scanLogDate===curDate && scanLog[s.id]) ? `<span class="guard">${scanChips(scanLog[s.id])}</span>` : ''}${(userRole==='admin') ? `<button class="xbtn scanEdit" data-sid="${esc(s.id)}" style="margin:4px 0 0;">✎ ${XL().editTimes}</button>` : ''}${attBy[curDate+'|'+s.id] ? `<span class="guard">${t().markedBy}: ${esc(staffName(attBy[curDate+'|'+s.id]))}</span>` : ''}
     </td></tr>`).join('')}</table></div>`;
 }
 
@@ -1332,11 +1558,11 @@ const canRep = ()=> adminOK && (userRole==='admin' || (userInfo && userInfo.perm
 function staffName(u){ const a=accounts.find(x=>x.username===u); return a ? (a.display_name||a.username) : (userInfo && u===adminUser && userInfo.display_name ? userInfo.display_name : (u||'')); }
 function navItems(){
   if(STAFF_APP && !adminOK) return [['admin',XL().loginNav,'home']];
-  if(STAFF_APP && adminOK && !isTeacher()) return [['admin',XL().dash,'home'],['madrissa',t().nav.madrissa,'madrissa'],['reports',t().nav.reports,'reports'],['team',t().nav.team,'team'],['scan',t().nav.scan,'scan']];
+  if(STAFF_APP && adminOK && !isTeacher()) return [['admin',XL().dash,'home'],['madrissa',t().nav.madrissa,'madrissa'],['reports',t().nav.reports,'reports'],['team',t().nav.team,'team'],['scan',t().nav.scan,'scan'],['hifz',t().nav.hifz,'hifz'],['results',t().nav.results,'results']];
   if(isTeacher()){
-    const it=[]; if(canAtt()) it.push(['attendance',t().nav.attendance,'attendance']); if(canAtt()) it.push(['scan',t().nav.scan,'scan']); if(canRep()) it.push(['reports',t().nav.reports,'reports']); return it;
+    const it=[]; if(canAtt()) it.push(['attendance',t().nav.attendance,'attendance']); if(canAtt()) it.push(['scan',t().nav.scan,'scan']); if(canAtt()) it.push(['hifz',t().nav.hifz,'hifz']); if(canRep()) it.push(['reports',t().nav.reports,'reports']); return it;
   }
-  return [['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa']].concat(adminOK?[['reports',t().nav.reports,'reports'],['team',t().nav.team,'team'],['scan',t().nav.scan,'scan']]:[]).concat([['check',t().nav.check,'check'],['mycontrib',t().nav.mycontrib,'mycontrib']]);
+  return [['home',t().nav.home,'home'],['madrissa',t().nav.madrissa,'madrissa']].concat(adminOK?[['reports',t().nav.reports,'reports'],['team',t().nav.team,'team'],['scan',t().nav.scan,'scan'],['hifz',t().nav.hifz,'hifz'],['results',t().nav.results,'results']]:[]).concat([['check',t().nav.check,'check'],['progress',t().nav.progress,'progress'],['leave',t().nav.leave,'leave'],['mycontrib',t().nav.mycontrib,'mycontrib']]);
 }
 function guardPage(){
   if(!isTeacher()) return;
@@ -1359,7 +1585,7 @@ async function loadActivity(reset){
   }catch(e){ showDebugError(e.message||String(e)); }
 }
 function doLogout(){
-  cardData=null; cardCls=''; document.body.classList.remove('printcards'); stopScan(); scanLog={}; scanState.result=null; photos={}; adminOK=false; adminUser=null; adminPass=null; userRole=null; userInfo=null; accounts=[]; attBy={}; activity=[]; teamLoaded=false; editingTeacher=null;
+  hifzMap={}; resMap={}; uniMiss={}; uniLoading={}; leaves=[]; cardData=null; cardCls=''; document.body.classList.remove('printcards'); stopScan(); scanLog={}; scanState.result=null; photos={}; adminOK=false; adminUser=null; adminPass=null; userRole=null; userInfo=null; accounts=[]; attBy={}; activity=[]; teamLoaded=false; editingTeacher=null;
   editingStudent=-1; reportsByDate={}; reportsLoadedKey=null; reportTeacher=null; reportWarn=[]; selectedAttDate=null; page=STAFF_APP?'admin':'home'; renderNav(); render();
 }
 function renderStaffBar(){
@@ -1516,8 +1742,8 @@ function renderReports(){
       ${cell(L.sabaq,'l',L.listener,txt(s.id,'sabaq_listener',r.sabaq_listener,L.listener))}
       ${cell(L.sabaq,'m',L.mistakes,num(s.id,'sabaq_mistakes',r.sabaq_mistakes,L.mistakes))}
       ${cell(L.sabaq,'a',L.atkan,num(s.id,'sabaq_atkan',r.sabaq_atkan,L.atkan))}${sabqiManzil}
-      <td data-label="${L.time1}">${sel(s.id,'time1',r.time1,T4)}</td>
-      <td data-label="${L.time2}">${sel(s.id,'time2',r.time2,T4)}</td>
+      <td data-label="${L.time1}">${sel(s.id,'time1',r.time1||attDefault(date,s.id),T4)}</td>
+      <td data-label="${L.time2}">${sel(s.id,'time2',r.time2||attDefault(date,s.id),T4)}</td>
       <td data-label="${L.uniform}">${sel(s.id,'uniform',r.uniform,['complete','incomplete'])}</td>
       <td data-label="${L.note}">${txt(s.id,'note',r.note,L.note)}</td>
       ${isTeacher() ? '' : `<td class="dr-actions" data-label="${L.tapSend}"><button type="button" class="drWa" data-sid="${esc(s.id)}">${L.wa}</button></td>`}
@@ -1916,6 +2142,7 @@ function bindEvents(){
     }catch(e){ showDebugError(e.message || String(e)); }
   });
   document.querySelectorAll('img.stph[data-sid]').forEach(i=> i.onclick = e=>{ e.stopPropagation(); showPhoto(i.dataset.sid); });
+  const openExport = el('openExport'); if(openExport) openExport.onclick=()=>{ page='export'; render(); };
   const openCards = el('openCards'); if(openCards) openCards.onclick=()=>{ cardData=null; cardErr=''; page='cards'; render(); };
   const photoOne = el('photoOne');
   if(photoOne) photoOne.onchange = async ()=>{
